@@ -1,0 +1,298 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# =============================================================================
+# code-sandbox — Pull & run a Docker container with multiple LLM coding agents
+# =============================================================================
+
+IMAGE_NAME="ghcr.io/aaronflorey/code-sandbox:latest"
+
+# ---------------------------------------------------------------------------
+# Pull the image (or build locally with --build)
+# ---------------------------------------------------------------------------
+pull_image() {
+  echo "Pulling $IMAGE_NAME ..."
+  docker pull "$IMAGE_NAME"
+}
+
+build_image() {
+  local script_dir
+  script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+  if [ ! -f "$script_dir/Dockerfile" ]; then
+    echo "Error: Dockerfile not found in $script_dir" >&2
+    echo "Use --pull to fetch the pre-built image, or run from the repo directory to build locally." >&2
+    exit 1
+  fi
+
+  echo "Building $IMAGE_NAME locally ..."
+  docker build -t "$IMAGE_NAME" "$script_dir"
+}
+
+ensure_image() {
+  if ! docker image inspect "$IMAGE_NAME" >/dev/null 2>&1; then
+    echo "Image $IMAGE_NAME not found locally. Pulling..."
+    pull_image
+  fi
+}
+
+# ---------------------------------------------------------------------------
+# Container name from working directory
+# ---------------------------------------------------------------------------
+container_name() {
+  local abs_path
+  abs_path="$(cd "$PWD" && pwd)"
+  local base
+  base="$(basename "$abs_path")"
+  local hash
+  hash="$(printf '%s' "$abs_path" | md5sum 2>/dev/null || md5 -q -s "$abs_path" 2>/dev/null || echo "$abs_path" | shasum | cut -c1-32)"
+  hash="${hash%% *}"
+  hash="${hash:0:12}"
+  echo "code-sandbox-${base}-${hash}"
+}
+
+# ---------------------------------------------------------------------------
+# Language selection
+# ---------------------------------------------------------------------------
+select_languages() {
+  # If project has a mise config, use it automatically
+  if [ -f "$PWD/.mise.toml" ] || [ -f "$PWD/mise.toml" ] || [ -f "$PWD/.mise/config.toml" ]; then
+    echo "__mise_toml__"
+    return
+  fi
+
+  echo "" >&2
+  echo "Select languages to install via mise (comma-separated, 'all', or Enter for none):" >&2
+  echo "  php  go  rust  bun  ruby  java  python  zig  erlang  elixir" >&2
+  echo "" >&2
+  read -rp "Languages: " selection
+  echo "$selection"
+}
+
+# ---------------------------------------------------------------------------
+# Environment forwarding
+# ---------------------------------------------------------------------------
+env_flags() {
+  local flags=()
+  local vars=(
+    OPENAI_API_KEY OPENAI_BASE_URL OPENAI_ORG_ID
+    ANTHROPIC_API_KEY ANTHROPIC_BASE_URL
+    GOOGLE_API_KEY GEMINI_API_KEY GOOGLE_CLOUD_PROJECT
+    GITHUB_TOKEN GH_TOKEN
+    GROQ_API_KEY MISTRAL_API_KEY DEEPSEEK_API_KEY OPENROUTER_API_KEY
+    AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN AWS_REGION
+  )
+  for var in "${vars[@]}"; do
+    if [ -n "${!var:-}" ]; then
+      flags+=(-e "${var}=${!var}")
+    fi
+  done
+
+  # Read .env.sandbox if present
+  if [ -f "$PWD/.env.sandbox" ]; then
+    while IFS='=' read -r key value; do
+      [[ "$key" =~ ^[[:space:]]*# ]] && continue
+      [[ -z "$key" ]] && continue
+      key="$(echo "$key" | xargs)"
+      flags+=(-e "${key}=${value}")
+    done < "$PWD/.env.sandbox"
+  fi
+
+  printf '%s\n' "${flags[@]}"
+}
+
+# ---------------------------------------------------------------------------
+# Volume mount flags
+# ---------------------------------------------------------------------------
+volume_flags() {
+  local flags=()
+
+  # Workspace
+  flags+=(-v "$PWD:/workspace")
+
+  # Config directories (only if they exist)
+  local config_dirs=(.codex .claude .gemini .opencode .code)
+  for dir in "${config_dirs[@]}"; do
+    if [ -d "$HOME/$dir" ]; then
+      flags+=(-v "$HOME/$dir:/home/code/$dir")
+    fi
+  done
+
+  # SSH (read-only)
+  if [ -d "$HOME/.ssh" ]; then
+    flags+=(-v "$HOME/.ssh:/home/code/.ssh:ro")
+  fi
+
+  # Git config (read-only)
+  if [ -f "$HOME/.gitconfig" ]; then
+    flags+=(-v "$HOME/.gitconfig:/home/code/.gitconfig:ro")
+  fi
+
+  # Persistent cache volumes
+  flags+=(-v "code-sandbox-npm-cache:/home/code/.npm")
+  flags+=(-v "code-sandbox-mise-data:/home/code/.local/share/mise")
+
+  printf '%s\n' "${flags[@]}"
+}
+
+# ---------------------------------------------------------------------------
+# Interactive menu
+# ---------------------------------------------------------------------------
+show_menu() {
+  echo ""
+  echo "Select an agent to launch:"
+  echo "  1) code      - Every Code (multi-model agent)"
+  echo "  2) claude    - Claude Code"
+  echo "  3) codex     - OpenAI Codex"
+  echo "  4) gemini    - Gemini CLI"
+  echo "  5) opencode  - OpenCode"
+  echo "  6) shell     - Bash shell"
+  echo ""
+  read -rp "Choice [1-6]: " choice
+
+  case "$choice" in
+    1) echo "code" ;;
+    2) echo "claude" ;;
+    3) echo "codex" ;;
+    4) echo "gemini" ;;
+    5) echo "opencode" ;;
+    6) echo "bash" ;;
+    *) echo "Invalid choice." >&2; exit 1 ;;
+  esac
+}
+
+# ---------------------------------------------------------------------------
+# Main
+# ---------------------------------------------------------------------------
+main() {
+  local do_pull=false
+  local do_build=false
+  local shell_mode=false
+  local opt_languages=""
+  local has_languages_flag=false
+  local pass_args=()
+  local explicit_cmd=false
+
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --pull)
+        do_pull=true
+        shift
+        ;;
+      --build)
+        do_build=true
+        shift
+        ;;
+      --shell)
+        shell_mode=true
+        shift
+        ;;
+      --languages)
+        has_languages_flag=true
+        opt_languages="${2:-}"
+        shift 2
+        ;;
+      --languages=*)
+        has_languages_flag=true
+        opt_languages="${1#*=}"
+        shift
+        ;;
+      --)
+        shift
+        pass_args=("$@")
+        explicit_cmd=true
+        break
+        ;;
+      *)
+        pass_args=("$@")
+        explicit_cmd=true
+        break
+        ;;
+    esac
+  done
+
+  # Get the image
+  if [ "$do_build" = true ]; then
+    build_image
+  elif [ "$do_pull" = true ]; then
+    pull_image
+  else
+    ensure_image
+  fi
+
+  local cname
+  cname="$(container_name)"
+
+  # Check for existing container
+  local state
+  state="$(docker inspect --format='{{.State.Status}}' "$cname" 2>/dev/null || echo "none")"
+
+  if [ "$state" = "running" ]; then
+    echo "Attaching to running container $cname ..."
+    local cmd
+    if [ "$shell_mode" = true ]; then
+      cmd="bash"
+    elif [ "$explicit_cmd" = true ] && [ ${#pass_args[@]} -gt 0 ]; then
+      cmd="${pass_args[*]}"
+    else
+      cmd="$(show_menu)"
+    fi
+    exec docker exec -it \
+      -e COLORTERM=truecolor -e FORCE_COLOR=1 \
+      "$cname" gosu code $cmd
+  fi
+
+  if [ "$state" != "none" ]; then
+    docker rm "$cname" >/dev/null 2>&1 || true
+  fi
+
+  # Language selection (only for new containers)
+  local languages=""
+  if [ "$has_languages_flag" = true ]; then
+    languages="$opt_languages"
+  else
+    languages="$(select_languages)"
+  fi
+
+  # Determine command
+  local cmd=()
+  if [ "$shell_mode" = true ]; then
+    cmd=(bash)
+  elif [ "$explicit_cmd" = true ] && [ ${#pass_args[@]} -gt 0 ]; then
+    cmd=("${pass_args[@]}")
+  else
+    local selection
+    selection="$(show_menu)"
+    cmd=("$selection")
+  fi
+
+  # Build docker run arguments
+  local run_args=(-it --rm)
+  run_args+=(--name "$cname")
+  run_args+=(--hostname code-sandbox)
+  run_args+=(--network bridge)
+  run_args+=(--tmpfs /tmp:exec,size=2g)
+  run_args+=(--security-opt=no-new-privileges)
+  run_args+=(--pids-limit=500)
+  run_args+=(--log-driver=local --log-opt max-size=10m)
+  run_args+=(-e "HOST_UID=$(id -u)" -e "HOST_GID=$(id -g)" -e "TERM=${TERM:-xterm-256color}")
+
+  # Pass language selection
+  if [ -n "$languages" ]; then
+    run_args+=(-e "SANDBOX_LANGUAGES=$languages")
+  fi
+
+  # Add volume mounts
+  while IFS= read -r flag; do
+    [ -n "$flag" ] && run_args+=("$flag")
+  done < <(volume_flags)
+
+  # Add environment variables
+  while IFS= read -r flag; do
+    [ -n "$flag" ] && run_args+=("$flag")
+  done < <(env_flags)
+
+  exec docker run "${run_args[@]}" "$IMAGE_NAME" "${cmd[@]}"
+}
+
+main "$@"
