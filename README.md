@@ -13,9 +13,9 @@ The image is built via GitHub Actions and hosted on GHCR. You don't need to buil
 - [OpenCode](https://github.com/opencode-ai/opencode)
 - [Every Code](https://github.com/just-every/code) (multi-model)
 
-**Always available:** Node.js 24, Python 3, git, gh CLI, ripgrep, fd, jq, sqlite3, and the usual dev tools.
+**Always available:** Node.js 24, Bun, Python 3, git, gh CLI, ripgrep, fd, fzf, bat, jq, sqlite3, htop, tmux, and the usual dev tools.
 
-**Install on demand via mise:** PHP, Go, Rust, Bun, Ruby, Java, Zig, Erlang, Elixir — or anything else mise supports.
+**Install on demand via mise:** PHP, Go, Rust, Ruby, Java, Zig, Erlang, Elixir — or anything else mise supports.
 
 ## Requirements
 
@@ -42,7 +42,7 @@ You'll be asked which languages to install:
 
 ```
 Select languages to install via mise (comma-separated, 'all', or Enter for none):
-  php  go  rust  bun  ruby  java  python  zig  erlang  elixir
+  php  go  rust  ruby  java  python  zig  erlang  elixir
 
 Languages: go,rust
 ```
@@ -163,7 +163,7 @@ Each project directory gets its own named container. Running the script twice fr
 
 These Docker volumes survive container removal:
 
-- `code-sandbox-npm-cache` — npm package cache
+- `code-sandbox-bun-cache` — bun package cache
 - `code-sandbox-mise-data` — all mise-installed runtimes and tools
 
 The mise volume is the important one. It means language installs persist across sessions — you won't have to reinstall Go every time you start a new container.
@@ -189,7 +189,7 @@ The GitHub Action builds and pushes automatically when `Dockerfile` or `entrypoi
 
 ## Troubleshooting
 
-**First pull is slow** — The image has Node, all the agents, and system packages. It's a one-time download.
+**First pull is slow** — The image has Node, Bun, all the agents, and system packages. It's a one-time download.
 
 **Language install is slow the first time** — mise is downloading the runtime. Cached in the `code-sandbox-mise-data` volume after that.
 

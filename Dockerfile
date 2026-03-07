@@ -35,11 +35,17 @@ RUN curl -fsSL https://deb.nodesource.com/setup_24.x | bash - \
     && apt-get install -y nodejs \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# 3. mise (runtime manager for optional languages)
-RUN curl https://mise.run | sh \
-    && mv /root/.local/bin/mise /usr/local/bin/mise
+# 3. Bun
+ENV BUN_INSTALL=/usr/local/bun
+RUN curl -fsSL https://bun.sh/install | bash \
+    && ln -sf /usr/local/bun/bin/bun /usr/local/bin/bun \
+    && ln -sf /usr/local/bun/bin/bunx /usr/local/bin/bunx
 
-# 4. NPM global tools (LLM agents)
+# 4. mise (runtime manager for optional languages)
+ENV MISE_INSTALL_PATH=/usr/local/bin/mise
+RUN curl https://mise.run | sh
+
+# 5. Global tools (LLM agents — installed via npm for Node.js compatibility)
 RUN npm install -g \
       @anthropic-ai/claude-code \
       @openai/codex \
@@ -47,7 +53,7 @@ RUN npm install -g \
       opencode-ai@latest \
       @just-every/code
 
-# 5. Entrypoint
+# 6. Entrypoint
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 

@@ -63,7 +63,7 @@ select_languages() {
 
   echo "" >&2
   echo "Select languages to install via mise (comma-separated, 'all', or Enter for none):" >&2
-  echo "  php  go  rust  bun  ruby  java  python  zig  erlang  elixir" >&2
+  echo "  php  go  rust  ruby  java  python  zig  erlang  elixir" >&2
   echo "" >&2
   read -rp "Languages: " selection
   echo "$selection"
@@ -129,7 +129,7 @@ volume_flags() {
   fi
 
   # Persistent cache volumes
-  flags+=(-v "code-sandbox-npm-cache:/home/code/.npm")
+  flags+=(-v "code-sandbox-bun-cache:/home/code/.bun")
   flags+=(-v "code-sandbox-mise-data:/home/code/.local/share/mise")
 
   printf '%s\n' "${flags[@]}"

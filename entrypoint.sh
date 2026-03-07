@@ -56,13 +56,13 @@ elif [ -n "${SANDBOX_LANGUAGES:-}" ]; then
     lang="$(echo "$lang" | xargs)"
     [ -z "$lang" ] && continue
     if [ "$lang" = "all" ]; then
-      echo "Installing all languages via mise (php, go, rust, bun) ..."
-      gosu code mise use -g php@latest go@latest rust@latest bun@latest
+      echo "Installing all languages via mise (php, go, rust, ruby, java, python, zig, erlang, elixir) ..."
+      gosu code mise use -g php@latest go@latest rust@latest ruby@latest java@latest python@latest zig@latest erlang@latest elixir@latest
       gosu code mise reshim
       break
     fi
     case "$lang" in
-      php|go|rust|bun|ruby|java|python|zig|erlang|elixir)
+      php|go|rust|ruby|java|python|zig|erlang|elixir)
         echo "Installing $lang via mise ..."
         gosu code mise use -g "${lang}@latest"
         ;;
