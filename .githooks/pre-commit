@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Only compile if the Amber source was staged
+if ! git diff --cached --name-only | grep -q 'code-sandbox\.ab$'; then
+    exit 0
+fi
+
+# Check that amber is installed
+if ! command -v amber &>/dev/null; then
+    echo "Error: amber is not installed. Install it with:"
+    echo '  bash <(curl -sL "https://github.com/amber-lang/amber/releases/download/0.5.1-alpha/install.sh")'
+    exit 1
+fi
+
+echo "Compiling code-sandbox.ab -> code-sandbox ..."
+amber build code-sandbox.ab code-sandbox
+
+# Add the compiled output to the commit
+git add code-sandbox
+
+echo "Compiled code-sandbox added to commit."

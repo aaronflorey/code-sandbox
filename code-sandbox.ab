@@ -1,0 +1,324 @@
+import { file_exists, dir_exists } from "std/fs"
+import { env_var_get, input_prompt } from "std/env"
+import { trim, split, starts_with, slice } from "std/text"
+
+let IMAGE_NAME = "ghcr.io/aaronflorey/code-sandbox:latest"
+
+fun show_help() {
+    echo "Usage: code-sandbox [options] [command [args...]]"
+    echo ""
+    echo "Options:"
+    echo "  --build                 Build the local Docker image"
+    echo "  --pull                  Pull the latest pre-built Docker image"
+    echo "  --shell                 Open a bash shell (skip agent menu)"
+    echo "  --languages <list>      Install mise languages (comma-separated)"
+    echo "  --languages=<list>      Same as above"
+    echo "  -h, --help              Show this help message"
+    echo ""
+    echo "Command Passing:"
+    echo "  Any non-option argument is treated as the container command."
+    echo "  Use -- to pass arguments that start with dashes."
+    echo ""
+    echo "Examples:"
+    echo "  code-sandbox --shell"
+    echo "  code-sandbox --languages go,rust -- shell"
+    echo "  code-sandbox -- codex --help"
+}
+
+fun pull_image() {
+    echo "Pulling {IMAGE_NAME} ..."
+    $ docker pull "{IMAGE_NAME}" $?
+}
+
+fun build_image() {
+    let script = trust $ readlink -f /proc/self/exe 2>/dev/null || which code-sandbox 2>/dev/null || echo "." $
+    let script_dir = trust $ dirname "{script}" $
+
+    if not file_exists("{script_dir}/Dockerfile") {
+        echo "Error: Dockerfile not found in {script_dir}"
+        echo "Use --pull to fetch the pre-built image, or run from the repo directory to build locally."
+        exit 1
+    }
+
+    echo "Building {IMAGE_NAME} locally ..."
+    $ docker build -t "{IMAGE_NAME}" "{script_dir}" $?
+}
+
+fun ensure_image() {
+    silent $ docker image inspect "{IMAGE_NAME}" $ failed {
+        echo "Image {IMAGE_NAME} not found locally. Pulling..."
+        pull_image()?
+    }
+}
+
+fun container_name(): Text {
+    let abs_path = trust $ pwd -P $
+    let base = trust $ basename "{abs_path}" $
+    let hash = trust $ echo -n "{abs_path}" | md5sum 2>/dev/null || md5 -q -s "{abs_path}" 2>/dev/null || echo -n "{abs_path}" | shasum | cut -c1-32 $
+    let hash_trimmed = slice(trim(hash), 0, 12)
+    return "code-sandbox-{base}-{hash_trimmed}"
+}
+
+fun select_languages(): Text {
+    let pwd = trust $ pwd $
+
+    if file_exists("{pwd}/.mise.toml") or file_exists("{pwd}/mise.toml") or dir_exists("{pwd}/.mise") {
+        return "__mise_toml__"
+    }
+
+    echo ""
+    echo "Select languages to install via mise (comma-separated, all, or Enter for none):"
+    echo "  php  go  rust  ruby  java  python  zig  erlang  elixir"
+    echo ""
+
+    let selection = input_prompt("Languages: ")
+    return selection
+}
+
+fun env_flags(): Text {
+    let flags = ""
+    let vars = [
+        "OPENAI_API_KEY", "OPENAI_BASE_URL", "OPENAI_ORG_ID",
+        "ANTHROPIC_API_KEY", "ANTHROPIC_BASE_URL",
+        "GOOGLE_API_KEY", "GEMINI_API_KEY", "GOOGLE_CLOUD_PROJECT",
+        "GITHUB_TOKEN", "GH_TOKEN",
+        "GROQ_API_KEY", "MISTRAL_API_KEY", "DEEPSEEK_API_KEY", "OPENROUTER_API_KEY",
+        "AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY", "AWS_SESSION_TOKEN", "AWS_REGION"
+    ]
+
+    for var in vars {
+        let val = env_var_get(var) failed {
+            continue
+        }
+        flags += " -e {var}={val}"
+    }
+
+    let pwd = trust $ pwd $
+    if file_exists("{pwd}/.env.sandbox") {
+        let content = trust $ cat "{pwd}/.env.sandbox" $
+        let lines = split(content, "\n")
+        for line in lines {
+            let trimmed = trim(line)
+            if trimmed == "" or starts_with(trimmed, "#") {
+                continue
+            }
+            flags += " -e {trimmed}"
+        }
+    }
+
+    return flags
+}
+
+fun volume_flags(): Text {
+    let flags = ""
+    let pwd = trust $ pwd -P $
+    let folder = trust $ basename "{pwd}" $
+    let home = trust $ printenv HOME $
+
+    flags += " -v {pwd}:/workspace/{folder}"
+
+    let config_dirs = [".codex", ".claude", ".gemini", ".opencode", ".code"]
+    for dir in config_dirs {
+        if dir_exists("{home}/{dir}") {
+            flags += " -v {home}/{dir}:/workspace/{dir}"
+        }
+    }
+
+    if dir_exists("{home}/.ssh") {
+        flags += " -v {home}/.ssh:/workspace/.ssh:ro"
+    }
+
+    if file_exists("{home}/.gitconfig") {
+        flags += " -v {home}/.gitconfig:/workspace/.gitconfig:ro"
+    }
+
+    flags += " -v code-sandbox-bun-cache:/home/code/.bun"
+    flags += " -v code-sandbox-mise-data:/workspace/.local/share/mise"
+
+    return flags
+}
+
+fun show_menu(): Text {
+    echo ""
+    echo "Select an agent to launch:"
+    echo "  1) code      - Every Code (multi-model agent)"
+    echo "  2) claude    - Claude Code"
+    echo "  3) codex     - OpenAI Codex"
+    echo "  4) gemini    - Gemini CLI"
+    echo "  5) opencode  - OpenCode"
+    echo "  6) shell     - Bash shell"
+    echo ""
+
+    let choice = input_prompt("Choice [1-6]: ")
+
+    if choice == "1": return "code"
+    if choice == "2": return "claude"
+    if choice == "3": return "codex"
+    if choice == "4": return "gemini"
+    if choice == "5": return "opencode"
+    if choice == "6": return "bash"
+
+    echo "Invalid choice."
+    exit 1
+}
+
+fun collect_args(args: [Text], start: Int): Text {
+    let result = ""
+    let j = start
+    loop {
+        if j >= len(args) {
+            break
+        }
+        if result != "" {
+            result += " "
+        }
+        result += args[j]
+        j += 1
+    }
+    return result
+}
+
+fun resolve_cmd(shell_mode: Bool, explicit_cmd: Bool, pass_args: Text): Text {
+    if shell_mode: return "bash"
+    if explicit_cmd and pass_args != "": return pass_args
+    return show_menu()
+}
+
+fun get_container_state(cname: Text): Text {
+    let json = $ docker inspect "{cname}" 2>/dev/null $ failed {
+        return "none"
+    }
+    let state = trust $ echo "{json}" | jq -r ".[0].State.Status" $
+    return trim(state)
+}
+
+main(args) {
+    let do_pull = false
+    let do_build = false
+    let shell_mode = false
+    let help_mode = false
+    let languages = "__prompt__"
+    let pass_args = ""
+    let explicit_cmd = false
+
+    // Amber includes the script path in args[0], so parse user args from index 1.
+    let i = 1
+    loop {
+        if i >= len(args) {
+            break
+        }
+        let arg = args[i]
+
+        if {
+            arg == "--pull" {
+                do_pull = true
+            }
+            arg == "--build" {
+                do_build = true
+            }
+            arg == "--shell" {
+                shell_mode = true
+            }
+            arg == "--help" or arg == "-h" {
+                help_mode = true
+            }
+            arg == "--languages" {
+                if i + 1 >= len(args) {
+                    echo "Error: --languages requires a value."
+                    echo "Use --help for usage."
+                    exit 1
+                }
+                i += 1
+                languages = args[i]
+            }
+            starts_with(arg, "--languages=") {
+                languages = trust $ echo "{arg}" | cut -d= -f2- $
+            }
+            arg == "--" {
+                pass_args = collect_args(args, i + 1)
+                explicit_cmd = true
+                break
+            }
+            starts_with(arg, "-") {
+                echo "Error: Unknown option: {arg}"
+                echo "Use --help for usage."
+                exit 1
+            }
+            else {
+                pass_args = collect_args(args, i)
+                explicit_cmd = true
+                break
+            }
+        }
+
+        i += 1
+    }
+
+    if help_mode {
+        show_help()
+        exit 0
+    }
+
+    // Get the image
+    if {
+        do_build {
+            build_image()?
+        }
+        do_pull {
+            pull_image()?
+        }
+        else {
+            ensure_image()?
+        }
+    }
+
+    let cname = container_name()
+    let state = get_container_state(cname)
+
+    if state == "running" {
+        echo "Attaching to running container {cname} ..."
+        let cmd = resolve_cmd(shell_mode, explicit_cmd, pass_args)
+        $ exec docker exec -it -e TERM=xterm-256color -e COLORTERM=truecolor -e FORCE_COLOR=1 "{cname}" gosu code {cmd} $?
+    }
+
+    if state != "none" {
+        silent trust $ docker rm "{cname}" $
+    }
+
+    // Language selection (only for new containers)
+    if languages == "__prompt__" {
+        languages = select_languages()
+    }
+
+    let cmd = resolve_cmd(shell_mode, explicit_cmd, pass_args)
+
+    // Build docker run command
+    let host_uid = trust $ id -u $
+    let host_gid = trust $ id -g $
+    let term = "xterm-256color"
+    let pwd = trust $ pwd -P $
+    let folder = trust $ basename "{pwd}" $
+    let project_dir = "/workspace/{folder}"
+
+    let run_cmd = "docker run -it --rm"
+    run_cmd += " --name {cname}"
+    run_cmd += " --hostname code-sandbox"
+    run_cmd += " -w {project_dir}"
+    run_cmd += " --network bridge"
+    run_cmd += " --tmpfs /tmp:exec,size=2g"
+    run_cmd += " --security-opt=no-new-privileges"
+    run_cmd += " --pids-limit=500"
+    run_cmd += " --log-driver=local --log-opt max-size=10m"
+    run_cmd += " -e HOST_UID={host_uid} -e HOST_GID={host_gid} -e TERM={term}"
+    run_cmd += " -e SANDBOX_PROJECT_DIR={project_dir}"
+
+    if languages != "" {
+        run_cmd += " -e SANDBOX_LANGUAGES={languages}"
+    }
+
+    run_cmd += volume_flags()
+    run_cmd += env_flags()
+    run_cmd += " {IMAGE_NAME} {cmd}"
+
+    $ exec {run_cmd} $?
+}

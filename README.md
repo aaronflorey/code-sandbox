@@ -187,6 +187,25 @@ cd code-sandbox
 
 The GitHub Action builds and pushes automatically when `Dockerfile` or `entrypoint.sh` changes on `main`. It builds for both `linux/amd64` and `linux/arm64`.
 
+## Development
+
+The launcher script is written in [Amber](https://amber-lang.com/), a language that compiles to Bash. The source is `code-sandbox.ab` and the compiled output is `code-sandbox`.
+
+To set up the development environment:
+
+```bash
+# Install Amber
+bash <(curl -sL "https://github.com/amber-lang/amber/releases/download/0.5.1-alpha/install.sh")
+
+# Enable the pre-commit hook
+./setup-hooks.sh
+
+# Compile manually
+amber build code-sandbox.ab code-sandbox
+```
+
+A pre-commit hook automatically compiles `code-sandbox.ab` and adds the compiled `code-sandbox` to your commit whenever the source changes.
+
 ## Troubleshooting
 
 **First pull is slow** — The image has Node, Bun, all the agents, and system packages. It's a one-time download.
