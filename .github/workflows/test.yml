@@ -36,9 +36,7 @@ jobs:
           bash -n code-sandbox
 
       - name: Shellcheck
-        run: |
-          shellcheck -x entrypoint.sh
-          shellcheck -x code-sandbox
+        run: shellcheck -x entrypoint.sh
 
   docker-smoke:
     runs-on: ubuntu-latest

@@ -48,6 +48,7 @@ fi
 # Set up mise in code user's bashrc
 BASHRC="$HOME_DIR/.bashrc"
 if ! grep -q 'mise activate' "$BASHRC" 2>/dev/null; then
+  # shellcheck disable=SC2016
   echo 'eval "$(mise activate bash)"' >> "$BASHRC"
   chown code:code "$BASHRC"
 fi
