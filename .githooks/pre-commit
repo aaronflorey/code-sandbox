@@ -1,8 +1,15 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Only compile if the Amber source was staged
-if ! git diff --cached --name-only | grep -q 'code-sandbox\.ab$'; then
+STAGED=$(git diff --cached --name-only)
+
+COMPILE_LAUNCHER=false
+COMPILE_ENTRYPOINT=false
+
+echo "${STAGED}" | grep -q 'code-sandbox\.ab$'  && COMPILE_LAUNCHER=true
+echo "${STAGED}" | grep -q 'entrypoint\.ab$'    && COMPILE_ENTRYPOINT=true
+
+if ! "${COMPILE_LAUNCHER}" && ! "${COMPILE_ENTRYPOINT}"; then
     exit 0
 fi
 
@@ -13,10 +20,18 @@ if ! command -v amber &>/dev/null; then
     exit 1
 fi
 
-echo "Compiling code-sandbox.ab -> code-sandbox ..."
-amber build code-sandbox.ab code-sandbox
+if "${COMPILE_LAUNCHER}"; then
+    echo "Compiling code-sandbox.ab -> code-sandbox ..."
+    amber build code-sandbox.ab code-sandbox
+    chmod +x code-sandbox
+    git add code-sandbox
+    echo "Compiled code-sandbox added to commit."
+fi
 
-# Add the compiled output to the commit
-git add code-sandbox
-
-echo "Compiled code-sandbox added to commit."
+if "${COMPILE_ENTRYPOINT}"; then
+    echo "Compiling entrypoint.ab -> entrypoint.sh ..."
+    amber build entrypoint.ab entrypoint.sh
+    chmod +x entrypoint.sh
+    git add entrypoint.sh
+    echo "Compiled entrypoint.sh added to commit."
+fi

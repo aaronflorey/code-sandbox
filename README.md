@@ -63,6 +63,31 @@ Select an agent to launch:
 
 Pick one and you're in.
 
+## Safe Mode (git repos)
+
+When your project directory is a git repo, the sandbox automatically runs in **Safe Mode**:
+
+1. A `git clone` of your repo is created at `/tmp/sandbox/<project>/` inside the container
+2. Your current uncommitted changes are rsynced on top (so the agent sees your full working tree)
+3. The agent works entirely inside that isolated copy — your host workspace files are never touched
+4. When the agent exits, you're asked what to do:
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  🛡️  Sandbox session ended — what should happen to the changes? │
+│                                                                  │
+│  A) Copy changes → workspace   (additive rsync, safe)          │
+│  B) Mirror sandbox → workspace (rsync --delete, may remove)    │
+│  C) Create new branch in workspace with the sandbox changes     │
+│  D) Discard — leave workspace exactly as it was                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+- **A** — rsync new/modified files back (never deletes anything from your workspace)
+- **B** — full mirror, including deletions the agent made
+- **C** — commits the sandbox changes and pushes them as a new `sandbox/YYYYMMDD-HHMMSS` branch in your local repo
+- **D** — walk away, nothing changes
+
 ## Usage
 
 ```bash

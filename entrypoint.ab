@@ -1,0 +1,274 @@
+import { trim, split, uppercase, rpad } from "std/text"
+import { env_var_get, is_command } from "std/env"
+import { dir_exists, file_exists, file_append } from "std/fs"
+
+fun collect_args(args: [Text], start: Int): Text {
+    let result = ""
+    let i = start
+    loop {
+        if i >= len(args): break
+        if result != "": result += " "
+        result += args[i]
+        i += 1
+    }
+    return result
+}
+
+fun setup_user(host_uid: Text, host_gid: Text, home_dir: Text): Null {
+    silent $ getent group code $ failed {
+        $ groupadd -g "{host_gid}" code $ failed {
+            trust $ groupadd code $
+        }
+    }
+    silent $ id code $ failed {
+        $ useradd -m -d "{home_dir}" -u "{host_uid}" -g code -s /bin/bash code $ failed {
+            trust $ useradd -m -d "{home_dir}" -g code -s /bin/bash code $
+        }
+    }
+}
+
+fun setup_dirs(home_dir: Text, project_dir: Text): Null {
+    trust $ mkdir -p "{home_dir}" "{project_dir}" $
+    silent trust $ chown code:code "{home_dir}" $
+}
+
+fun setup_sudo(): Null {
+    trust $ echo "code ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/code $
+    trust $ chmod 0440 /etc/sudoers.d/code $
+}
+
+fun setup_git(home_dir: Text, project_dir: Text): Null {
+    silent trust $ git config --global --add safe.directory "{home_dir}" $
+    silent trust $ git config --global --add safe.directory "{project_dir}" $
+    if not file_exists("{home_dir}/.gitconfig") {
+        trust $ gosu code git config --global user.name "code" $
+        trust $ gosu code git config --global user.email "code@sandbox" $
+    }
+}
+
+fun setup_local_dirs(home_dir: Text): Null {
+    trust $ mkdir -p "{home_dir}/.local/share/mise" "{home_dir}/.local/bin" "{home_dir}/.config/mise" "{home_dir}/.config/composer" $
+    silent trust $ chown -R code:code "{home_dir}/.local" "{home_dir}/.config" $
+    if dir_exists("/usr/local/install/global/node_modules/@just-every/code") {
+        silent trust $ chown -R code:code "/usr/local/install/global/node_modules/@just-every/code" $
+    }
+}
+
+fun setup_bashrc(home_dir: Text): Null {
+    let bashrc = "{home_dir}/.bashrc"
+    let has_mise = true
+    silent $ grep -q "mise activate" "{bashrc}" $ failed {
+        has_mise = false
+    }
+    if not has_mise {
+        // \$ writes a literal $ so bash sources the file with eval "$(mise activate bash)" intact
+        trust file_append(bashrc, "eval \"\$(mise activate bash)\"\n")
+        silent trust $ chown code:code "{bashrc}" $
+    }
+}
+
+fun setup_code_symlink(home_dir: Text): Null {
+    if not is_command("code") {
+        if is_command("coder") {
+            let coder_path = trust $ command -v coder $
+            trust $ ln -sf "{coder_path}" "{home_dir}/.local/bin/code" $
+            silent trust $ chown code:code "{home_dir}/.local/bin/code" $
+        }
+    }
+}
+
+fun install_languages(sandbox_languages: Text, project_dir: Text): Null {
+    if sandbox_languages == "__mise_toml__" {
+        echo "Installing languages from .mise.toml ..."
+        trust $ cd "{project_dir}" $
+        trust $ gosu code mise install -y $
+        trust $ gosu code mise reshim $
+    } else {
+        let langs = split(sandbox_languages, ",")
+        for lang in langs {
+            let l = trim(lang)
+            if l == "": continue
+            if l == "all" {
+                echo "Installing all languages via mise (php, go, rust, ruby, java, python, zig, erlang, elixir) ..."
+                trust $ gosu code mise use -g php@latest go@latest rust@latest ruby@latest java@latest python@latest zig@latest erlang@latest elixir@latest $
+                trust $ gosu code mise reshim $
+                break
+            }
+            if {
+                l == "php" or l == "go" or l == "rust" or l == "ruby" or l == "java" or l == "python" or l == "zig" or l == "erlang" or l == "elixir" {
+                    echo "Installing {l} via mise ..."
+                    trust $ gosu code mise use -g "{l}@latest" $
+                }
+                else {
+                    echo "Unknown language: {l} (skipping)"
+                }
+            }
+        }
+        trust $ gosu code mise reshim $
+    }
+}
+
+fun install_composer(home_dir: Text): Null {
+    let php_available = true
+    silent $ gosu code mise which php $ failed {
+        php_available = false
+    }
+    if php_available and not is_command("composer") {
+        echo "Installing Composer ..."
+        trust $ curl -sS https://getcomposer.org/installer | gosu code php -- --install-dir="{home_dir}/.local/bin" --filename=composer $
+    }
+}
+
+fun setup_sandbox(project_dir: Text): Text {
+    silent $ git -C "{project_dir}" rev-parse --is-inside-work-tree $ failed {
+        return ""
+    }
+
+    let proj_name = trust $ basename "{project_dir}" $
+    let sandbox_work_dir = "/tmp/sandbox/{proj_name}"
+    let padded = rpad(proj_name, " ", 40)
+
+    echo ""
+    echo "┌─────────────────────────────────────────────────────────────────┐"
+    echo "│  🛡️  Safe Mode: isolated sandbox workspace                       │"
+    echo "│                                                                  │"
+    echo "│  Git repo detected. The agent will work in an isolated copy     │"
+    echo "│  of your project — your workspace files stay untouched until    │"
+    echo "│  you decide what to do when the session ends.                   │"
+    echo "│                                                                  │"
+    echo "│  Sandbox : /tmp/sandbox/{padded}│"
+    echo "│  On exit : you will be asked what to do with any changes.       │"
+    echo "└─────────────────────────────────────────────────────────────────┘"
+    echo ""
+
+    trust $ mkdir -p /tmp/sandbox $
+    trust $ chown code:code /tmp/sandbox $
+
+    $ gosu code git clone --quiet "{project_dir}" "{sandbox_work_dir}" $ failed {
+        echo "Warning: git clone failed — falling back to direct workspace."
+        echo ""
+        return ""
+    }
+
+    trust $ gosu code rsync -a --exclude=.git "{project_dir}/" "{sandbox_work_dir}/" $
+    silent trust $ gosu code git -C "{sandbox_work_dir}" remote set-url origin "{project_dir}" $
+
+    // Check for any dirty state: unstaged, staged, or untracked files
+    let has_diff = false
+    silent $ gosu code git -C "{sandbox_work_dir}" diff --quiet $ failed {
+        has_diff = true
+    }
+    let has_cached = false
+    silent $ gosu code git -C "{sandbox_work_dir}" diff --cached --quiet $ failed {
+        has_cached = true
+    }
+    let untracked = trust $ gosu code git -C "{sandbox_work_dir}" ls-files --others --exclude-standard $
+    if has_diff or has_cached or untracked != "" {
+        trust $ gosu code git -C "{sandbox_work_dir}" add -A $
+        silent trust $ gosu code git -C "{sandbox_work_dir}" commit -m "pre-sandbox: uncommitted host changes" --quiet $
+    }
+
+    return sandbox_work_dir
+}
+
+fun sandbox_exit(sandbox_work_dir: Text, project_dir: Text): Null {
+    echo ""
+    echo "┌─────────────────────────────────────────────────────────────────┐"
+    echo "│  🛡️  Sandbox session ended — what should happen to the changes? │"
+    echo "│                                                                  │"
+    echo "│  A) Copy changes → workspace   (additive rsync, safe)          │"
+    echo "│  B) Mirror sandbox → workspace (rsync --delete, may remove)    │"
+    echo "│  C) Create new branch in workspace with the sandbox changes     │"
+    echo "│  D) Discard — leave workspace exactly as it was                 │"
+    echo "└─────────────────────────────────────────────────────────────────┘"
+    echo ""
+
+    // Read from /dev/tty to ensure we get terminal input even if stdin is piped
+    let choice = trust $ if [ -t 0 ]; then read -r -p "Choice [A/B/C/D]: " _c </dev/tty 2>/dev/tty || _c="D"; else _c="D"; fi; echo "\$_c" $
+    let choice_upper = uppercase(choice)
+
+    if {
+        choice_upper == "A" {
+            echo "→ Copying sandbox changes to workspace (additive)..."
+            trust $ rsync -a --exclude=.git "{sandbox_work_dir}/" "{project_dir}/" $
+            echo "✓ Done."
+        }
+        choice_upper == "B" {
+            echo "→ Mirroring sandbox to workspace (adds + deletes)..."
+            trust $ rsync -a --delete --exclude=.git "{sandbox_work_dir}/" "{project_dir}/" $
+            echo "✓ Done."
+        }
+        choice_upper == "C" {
+            let branch = trust $ echo "sandbox/\$(date +%Y%m%d-%H%M%S)" $
+            echo "→ Creating branch {branch}..."
+            trust $ gosu code git -C "{sandbox_work_dir}" add -A $
+            silent $ gosu code git -C "{sandbox_work_dir}" diff --cached --quiet $ failed {
+                trust $ gosu code git -C "{sandbox_work_dir}" commit -m "sandbox: agent changes" --quiet $
+            }
+            let push_failed = false
+            $ gosu code git -C "{sandbox_work_dir}" push origin "HEAD:refs/heads/{branch}" --quiet $ failed {
+                push_failed = true
+            }
+            if push_failed {
+                echo "✗ Branch push failed — falling back to additive rsync..."
+                trust $ rsync -a --exclude=.git "{sandbox_work_dir}/" "{project_dir}/" $
+                echo "✓ Changes copied to workspace instead."
+            } else {
+                echo "✓ Branch '{branch}' created in workspace."
+                echo "  Switch to it with: git checkout {branch}"
+            }
+        }
+        else {
+            echo "→ Workspace unchanged."
+        }
+    }
+}
+
+main(args) {
+    let host_uid = env_var_get("HOST_UID") failed { "1000" }
+    let host_gid = env_var_get("HOST_GID") failed { "1000" }
+    const home_dir = "/workspace"
+    let project_dir = env_var_get("SANDBOX_PROJECT_DIR") failed { "/workspace" }
+
+    trust $ export HOME="{home_dir}" $
+
+    setup_user(host_uid, host_gid, home_dir)
+    setup_dirs(home_dir, project_dir)
+    setup_sudo()
+    setup_git(home_dir, project_dir)
+    setup_local_dirs(home_dir)
+    setup_bashrc(home_dir)
+
+    let current_path = env_var_get("PATH") failed { "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" }
+    trust $ export PATH="{home_dir}/.local/share/mise/shims:{home_dir}/.local/bin:/usr/local/bun/bin:{current_path}" $
+
+    setup_code_symlink(home_dir)
+
+    let sandbox_languages = env_var_get("SANDBOX_LANGUAGES") failed { "" }
+    if sandbox_languages != "" {
+        install_languages(sandbox_languages, project_dir)
+    }
+
+    install_composer(home_dir)
+
+    trust $ export COLORTERM=truecolor $
+    trust $ export FORCE_COLOR=1 $
+
+    let sandbox_work_dir = setup_sandbox(project_dir)
+    let cmd = collect_args(args, 1)
+
+    if sandbox_work_dir != "" {
+        trust $ cd "{sandbox_work_dir}" $
+        let agent_exit = 0
+        $ gosu code {cmd} $ failed(code) {
+            agent_exit = code
+        }
+        sandbox_exit(sandbox_work_dir, project_dir)
+        trust $ exit {agent_exit} $
+    } else {
+        if dir_exists(project_dir) {
+            trust $ cd "{project_dir}" $
+        }
+        $ exec gosu code {cmd} $?
+    }
+}
