@@ -1,4 +1,4 @@
-import { trim, split, uppercase, rpad } from "std/text"
+import { trim, split, uppercase } from "std/text"
 import { env_var_get, is_command } from "std/env"
 import { dir_exists, file_exists, file_append } from "std/fs"
 
@@ -119,111 +119,6 @@ fun install_composer(home_dir: Text): Null {
     }
 }
 
-fun setup_sandbox(project_dir: Text): Text {
-    silent $ git -C "{project_dir}" rev-parse --is-inside-work-tree $ failed {
-        return ""
-    }
-
-    let proj_name = trust $ basename "{project_dir}" $
-    let sandbox_work_dir = "/tmp/sandbox/{proj_name}"
-    let padded = rpad(proj_name, " ", 40)
-
-    echo ""
-    echo "┌─────────────────────────────────────────────────────────────────┐"
-    echo "│  🛡️  Safe Mode: isolated sandbox workspace                       │"
-    echo "│                                                                  │"
-    echo "│  Git repo detected. The agent will work in an isolated copy     │"
-    echo "│  of your project — your workspace files stay untouched until    │"
-    echo "│  you decide what to do when the session ends.                   │"
-    echo "│                                                                  │"
-    echo "│  Sandbox : /tmp/sandbox/{padded}│"
-    echo "│  On exit : you will be asked what to do with any changes.       │"
-    echo "└─────────────────────────────────────────────────────────────────┘"
-    echo ""
-
-    trust $ mkdir -p /tmp/sandbox $
-    trust $ chown code:code /tmp/sandbox $
-
-    $ gosu code git clone --quiet "{project_dir}" "{sandbox_work_dir}" $ failed {
-        echo "Warning: git clone failed — falling back to direct workspace."
-        echo ""
-        return ""
-    }
-
-    trust $ gosu code rsync -a --exclude=.git "{project_dir}/" "{sandbox_work_dir}/" $
-    silent trust $ gosu code git -C "{sandbox_work_dir}" remote set-url origin "{project_dir}" $
-
-    // Check for any dirty state: unstaged, staged, or untracked files
-    let has_diff = false
-    silent $ gosu code git -C "{sandbox_work_dir}" diff --quiet $ failed {
-        has_diff = true
-    }
-    let has_cached = false
-    silent $ gosu code git -C "{sandbox_work_dir}" diff --cached --quiet $ failed {
-        has_cached = true
-    }
-    let untracked = trust $ gosu code git -C "{sandbox_work_dir}" ls-files --others --exclude-standard $
-    if has_diff or has_cached or untracked != "" {
-        trust $ gosu code git -C "{sandbox_work_dir}" add -A $
-        silent trust $ gosu code git -C "{sandbox_work_dir}" commit -m "pre-sandbox: uncommitted host changes" --quiet $
-    }
-
-    return sandbox_work_dir
-}
-
-fun sandbox_exit(sandbox_work_dir: Text, project_dir: Text): Null {
-    echo ""
-    echo "┌─────────────────────────────────────────────────────────────────┐"
-    echo "│  🛡️  Sandbox session ended — what should happen to the changes? │"
-    echo "│                                                                  │"
-    echo "│  A) Copy changes → workspace   (additive rsync, safe)          │"
-    echo "│  B) Mirror sandbox → workspace (rsync --delete, may remove)    │"
-    echo "│  C) Create new branch in workspace with the sandbox changes     │"
-    echo "│  D) Discard — leave workspace exactly as it was                 │"
-    echo "└─────────────────────────────────────────────────────────────────┘"
-    echo ""
-
-    // Read from /dev/tty to ensure we get terminal input even if stdin is piped
-    let choice = trust $ if [ -t 0 ]; then read -r -p "Choice [A/B/C/D]: " _c </dev/tty 2>/dev/tty || _c="D"; else _c="D"; fi; echo "\$_c" $
-    let choice_upper = uppercase(choice)
-
-    if {
-        choice_upper == "A" {
-            echo "→ Copying sandbox changes to workspace (additive)..."
-            trust $ rsync -a --exclude=.git "{sandbox_work_dir}/" "{project_dir}/" $
-            echo "✓ Done."
-        }
-        choice_upper == "B" {
-            echo "→ Mirroring sandbox to workspace (adds + deletes)..."
-            trust $ rsync -a --delete --exclude=.git "{sandbox_work_dir}/" "{project_dir}/" $
-            echo "✓ Done."
-        }
-        choice_upper == "C" {
-            let branch = trust $ echo "sandbox/\$(date +%Y%m%d-%H%M%S)" $
-            echo "→ Creating branch {branch}..."
-            trust $ gosu code git -C "{sandbox_work_dir}" add -A $
-            silent $ gosu code git -C "{sandbox_work_dir}" diff --cached --quiet $ failed {
-                trust $ gosu code git -C "{sandbox_work_dir}" commit -m "sandbox: agent changes" --quiet $
-            }
-            let push_failed = false
-            $ gosu code git -C "{sandbox_work_dir}" push origin "HEAD:refs/heads/{branch}" --quiet $ failed {
-                push_failed = true
-            }
-            if push_failed {
-                echo "✗ Branch push failed — falling back to additive rsync..."
-                trust $ rsync -a --exclude=.git "{sandbox_work_dir}/" "{project_dir}/" $
-                echo "✓ Changes copied to workspace instead."
-            } else {
-                echo "✓ Branch '{branch}' created in workspace."
-                echo "  Switch to it with: git checkout {branch}"
-            }
-        }
-        else {
-            echo "→ Workspace unchanged."
-        }
-    }
-}
-
 main(args) {
     let host_uid = env_var_get("HOST_UID") failed { "1000" }
     let host_gid = env_var_get("HOST_GID") failed { "1000" }
@@ -254,21 +149,10 @@ main(args) {
     trust $ export COLORTERM=truecolor $
     trust $ export FORCE_COLOR=1 $
 
-    let sandbox_work_dir = setup_sandbox(project_dir)
-    let cmd = collect_args(args, 1)
-
-    if sandbox_work_dir != "" {
-        trust $ cd "{sandbox_work_dir}" $
-        let agent_exit = 0
-        $ gosu code {cmd} $ failed(code) {
-            agent_exit = code
-        }
-        sandbox_exit(sandbox_work_dir, project_dir)
-        trust $ exit {agent_exit} $
-    } else {
-        if dir_exists(project_dir) {
-            trust $ cd "{project_dir}" $
-        }
-        $ exec gosu code {cmd} $?
+    if dir_exists(project_dir) {
+        trust $ cd "{project_dir}" $
     }
+
+    let cmd = collect_args(args, 1)
+    $ exec gosu code {cmd} $?
 }

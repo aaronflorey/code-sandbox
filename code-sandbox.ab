@@ -1,6 +1,6 @@
 import { file_exists, dir_exists } from "std/fs"
 import { env_var_get, input_prompt } from "std/env"
-import { trim, split, starts_with, slice } from "std/text"
+import { trim, split, starts_with, slice, rpad, uppercase } from "std/text"
 
 let IMAGE_NAME = "ghcr.io/aaronflorey/code-sandbox:latest"
 
@@ -109,13 +109,11 @@ fun env_flags(): Text {
     return flags
 }
 
-fun volume_flags(): Text {
+fun volume_flags(source_dir: Text, folder: Text): Text {
     let flags = ""
-    let pwd = trust $ pwd -P $
-    let folder = trust $ basename "{pwd}" $
     let home = trust $ printenv HOME $
 
-    flags += " -v {pwd}:/workspace/{folder}"
+    flags += " -v {source_dir}:/workspace/{folder}"
 
     let config_dirs = [".codex", ".claude", ".gemini", ".opencode", ".code", ".copilot"]
     for dir in config_dirs {
@@ -199,6 +197,108 @@ fun get_container_state(cname: Text): Text {
     }
     let state = trust $ echo "{json}" | jq -r ".[0].State.Status" $
     return trim(state)
+}
+
+fun sandbox_setup(pwd: Text, folder: Text): Text {
+    silent $ git -C "{pwd}" rev-parse --is-inside-work-tree $ failed {
+        return ""
+    }
+
+    let timestamp = trust $ date +%Y%m%d-%H%M%S $
+    let sandbox_dir = "/tmp/code-sandbox/{folder}-{timestamp}"
+    let padded = rpad(sandbox_dir, " ", 55)
+
+    echo ""
+    echo "┌─────────────────────────────────────────────────────────────────┐"
+    echo "│  🛡️  Safe Mode: isolated sandbox workspace                       │"
+    echo "│                                                                  │"
+    echo "│  Git repo detected. The agent will work in an isolated copy     │"
+    echo "│  of your project — your workspace files stay untouched until    │"
+    echo "│  you decide what to do when the session ends.                   │"
+    echo "│                                                                  │"
+    echo "│  Sandbox : {padded}│"
+    echo "│  On exit : you will be asked what to do with any changes.       │"
+    echo "└─────────────────────────────────────────────────────────────────┘"
+    echo ""
+
+    trust $ mkdir -p /tmp/code-sandbox $
+
+    $ git clone --quiet "{pwd}" "{sandbox_dir}" $ failed {
+        echo "Warning: git clone failed — using direct workspace."
+        echo ""
+        return ""
+    }
+
+    trust $ rsync -a --exclude=.git "{pwd}/" "{sandbox_dir}/" $
+    silent trust $ git -C "{sandbox_dir}" remote set-url origin "{pwd}" $
+
+    // Commit any pre-existing dirty state as a baseline so the agent's work
+    // lands in a separate, clean commit — useful for option C (branch push).
+    let has_diff = false
+    silent $ git -C "{sandbox_dir}" diff --quiet $ failed { has_diff = true }
+    let has_cached = false
+    silent $ git -C "{sandbox_dir}" diff --cached --quiet $ failed { has_cached = true }
+    let untracked = trust $ git -C "{sandbox_dir}" ls-files --others --exclude-standard $
+    if has_diff or has_cached or untracked != "" {
+        trust $ git -C "{sandbox_dir}" add -A $
+        silent trust $ git -C "{sandbox_dir}" commit -m "pre-sandbox: uncommitted host changes" --quiet $
+    }
+
+    return sandbox_dir
+}
+
+fun sandbox_exit(sandbox_dir: Text, project_dir: Text): Null {
+    echo ""
+    echo "┌─────────────────────────────────────────────────────────────────┐"
+    echo "│  🛡️  Sandbox session ended — what should happen to the changes? │"
+    echo "│                                                                  │"
+    echo "│  A) Copy changes → workspace   (additive rsync, safe)          │"
+    echo "│  B) Mirror sandbox → workspace (rsync --delete, may remove)    │"
+    echo "│  C) Create new branch in workspace with the sandbox changes     │"
+    echo "│  D) Discard — leave workspace exactly as it was                 │"
+    echo "└─────────────────────────────────────────────────────────────────┘"
+    echo ""
+
+    let choice = trust $ if [ -t 0 ]; then read -r -p "Choice [A/B/C/D]: " _c </dev/tty 2>/dev/tty || _c="D"; else _c="D"; fi; echo "\$_c" $
+    let choice_upper = uppercase(choice)
+
+    if {
+        choice_upper == "A" {
+            echo "→ Copying sandbox changes to workspace (additive)..."
+            trust $ rsync -a --exclude=.git "{sandbox_dir}/" "{project_dir}/" $
+            echo "✓ Done."
+        }
+        choice_upper == "B" {
+            echo "→ Mirroring sandbox to workspace (adds + deletes)..."
+            trust $ rsync -a --delete --exclude=.git "{sandbox_dir}/" "{project_dir}/" $
+            echo "✓ Done."
+        }
+        choice_upper == "C" {
+            let branch = trust $ echo "sandbox/\$(date +%Y%m%d-%H%M%S)" $
+            echo "→ Creating branch {branch}..."
+            trust $ git -C "{sandbox_dir}" add -A $
+            silent $ git -C "{sandbox_dir}" diff --cached --quiet $ failed {
+                trust $ git -C "{sandbox_dir}" commit -m "sandbox: agent changes" --quiet $
+            }
+            let push_failed = false
+            $ git -C "{sandbox_dir}" push origin "HEAD:refs/heads/{branch}" --quiet $ failed {
+                push_failed = true
+            }
+            if push_failed {
+                echo "✗ Branch push failed — falling back to additive rsync..."
+                trust $ rsync -a --exclude=.git "{sandbox_dir}/" "{project_dir}/" $
+                echo "✓ Changes copied to workspace instead."
+            } else {
+                echo "✓ Branch '{branch}' created in workspace."
+                echo "  Switch to it with: git checkout {branch}"
+            }
+        }
+        else {
+            echo "→ Workspace unchanged."
+        }
+    }
+
+    trust $ rm -rf "{sandbox_dir}" $
 }
 
 main(args) {
@@ -309,6 +409,15 @@ main(args) {
     let folder = trust $ basename "{pwd}" $
     let project_dir = "/workspace/{folder}"
 
+    // Set up sandbox on the host before starting the container.
+    // The sandbox dir is mounted in place of the real project, so even
+    // a destructive agent command cannot touch the original workspace.
+    let sandbox_dir = sandbox_setup(pwd, folder)
+    let source_dir = pwd
+    if sandbox_dir != "" {
+        source_dir = sandbox_dir
+    }
+
     let run_cmd = "docker run -it --rm"
     run_cmd += " --name {cname}"
     run_cmd += " --hostname code-sandbox"
@@ -325,9 +434,18 @@ main(args) {
         run_cmd += " -e SANDBOX_LANGUAGES={languages}"
     }
 
-    run_cmd += volume_flags()
+    run_cmd += volume_flags(source_dir, folder)
     run_cmd += env_flags()
     run_cmd += " {IMAGE_NAME} {cmd}"
 
-    $ exec {run_cmd} $?
+    if sandbox_dir != "" {
+        let agent_exit = 0
+        $ {run_cmd} $ failed(code) {
+            agent_exit = code
+        }
+        sandbox_exit(sandbox_dir, pwd)
+        trust $ exit {agent_exit} $
+    } else {
+        $ exec {run_cmd} $?
+    }
 }
