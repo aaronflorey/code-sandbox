@@ -117,10 +117,17 @@ fun volume_flags(): Text {
 
     flags += " -v {pwd}:/workspace/{folder}"
 
-    let config_dirs = [".codex", ".claude", ".gemini", ".opencode", ".code"]
+    let config_dirs = [".codex", ".claude", ".gemini", ".opencode", ".code", ".copilot"]
     for dir in config_dirs {
         if dir_exists("{home}/{dir}") {
             flags += " -v {home}/{dir}:/workspace/{dir}"
+        }
+    }
+
+    let config_files = [".claude.json"]
+    for file in config_files {
+        if file_exists("{home}/{file}") {
+            flags += " -v {home}/{file}:/workspace/{file}"
         }
     }
 
@@ -146,17 +153,19 @@ fun show_menu(): Text {
     echo "  3) codex     - OpenAI Codex"
     echo "  4) gemini    - Gemini CLI"
     echo "  5) opencode  - OpenCode"
-    echo "  6) shell     - Bash shell"
+    echo "  6) copilot   - GitHub Copilot"
+    echo "  7) shell     - Bash shell"
     echo ""
 
-    let choice = input_prompt("Choice [1-6]: ")
+    let choice = input_prompt("Choice [1-7]: ")
 
     if choice == "1": return "code"
     if choice == "2": return "claude"
     if choice == "3": return "codex"
     if choice == "4": return "gemini"
     if choice == "5": return "opencode"
-    if choice == "6": return "bash"
+    if choice == "6": return "copilot"
+    if choice == "7": return "bash"
 
     echo "Invalid choice."
     exit 1

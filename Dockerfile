@@ -44,6 +44,7 @@ RUN bun install -g \
       @google/gemini-cli \
       opencode-ai@latest \
       @just-every/code \
+      @github/copilot \
       && rm -rf /tmp/*
 
 # 6. Entrypoint

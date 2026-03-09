@@ -12,6 +12,7 @@ The image is built via GitHub Actions and hosted on GHCR. You don't need to buil
 - [Gemini CLI](https://github.com/google/gemini-cli) (Google)
 - [OpenCode](https://github.com/opencode-ai/opencode)
 - [Every Code](https://github.com/just-every/code) (multi-model)
+- [GitHub Copilot](https://www.npmjs.com/package/@github/copilot) (GitHub)
 
 **Always available:** Node.js 24, Bun, Python 3, git, gh CLI, ripgrep, fd, fzf, bat, jq, sqlite3, htop, tmux, and the usual dev tools.
 
@@ -56,7 +57,8 @@ Select an agent to launch:
   3) codex     - OpenAI Codex
   4) gemini    - Gemini CLI
   5) opencode  - OpenCode
-  6) shell     - Bash shell
+  6) copilot   - GitHub Copilot
+  7) shell     - Bash shell
 ```
 
 Pick one and you're in.

@@ -6,10 +6,10 @@
 split__5_v0() {
     local text=$1
     local delimiter=$2
-    result_51=()
-    IFS="${delimiter}" read -rd '' -a result_51 < <(printf %s "$text")
+    result_53=()
+    IFS="${delimiter}" read -rd '' -a result_53 < <(printf %s "$text")
     __status=$?
-    ret_split5_v0=("${result_51[@]}")
+    ret_split5_v0=("${result_53[@]}")
     return 0
 }
 
@@ -218,41 +218,41 @@ select_languages__131_v0() {
 }
 
 env_flags__132_v0() {
-    flags_45=""
-    vars_46=("OPENAI_API_KEY" "OPENAI_BASE_URL" "OPENAI_ORG_ID" "ANTHROPIC_API_KEY" "ANTHROPIC_BASE_URL" "GOOGLE_API_KEY" "GEMINI_API_KEY" "GOOGLE_CLOUD_PROJECT" "GITHUB_TOKEN" "GH_TOKEN" "GROQ_API_KEY" "MISTRAL_API_KEY" "DEEPSEEK_API_KEY" "OPENROUTER_API_KEY" "AWS_ACCESS_KEY_ID" "AWS_SECRET_ACCESS_KEY" "AWS_SESSION_TOKEN" "AWS_REGION")
-    for var_47 in "${vars_46[@]}"; do
-        env_var_get__100_v0 "${var_47}"
+    flags_47=""
+    vars_48=("OPENAI_API_KEY" "OPENAI_BASE_URL" "OPENAI_ORG_ID" "ANTHROPIC_API_KEY" "ANTHROPIC_BASE_URL" "GOOGLE_API_KEY" "GEMINI_API_KEY" "GOOGLE_CLOUD_PROJECT" "GITHUB_TOKEN" "GH_TOKEN" "GROQ_API_KEY" "MISTRAL_API_KEY" "DEEPSEEK_API_KEY" "OPENROUTER_API_KEY" "AWS_ACCESS_KEY_ID" "AWS_SECRET_ACCESS_KEY" "AWS_SESSION_TOKEN" "AWS_REGION")
+    for var_49 in "${vars_48[@]}"; do
+        env_var_get__100_v0 "${var_49}"
         __status=$?
         if [ "${__status}" != 0 ]; then
             continue
         fi
-        val_48="${ret_env_var_get100_v0}"
-        flags_45+=" -e ${var_47}=${val_48}"
+        val_50="${ret_env_var_get100_v0}"
+        flags_47+=" -e ${var_49}=${val_50}"
     done
     command_15="$(pwd)"
     __status=$?
-    pwd_49="${command_15}"
-    file_exists__37_v0 "${pwd_49}/.env.sandbox"
+    pwd_51="${command_15}"
+    file_exists__37_v0 "${pwd_51}/.env.sandbox"
     ret_file_exists37_v0__97_8="${ret_file_exists37_v0}"
     if [ "${ret_file_exists37_v0__97_8}" != 0 ]; then
-        command_16="$(cat "${pwd_49}/.env.sandbox")"
+        command_16="$(cat "${pwd_51}/.env.sandbox")"
         __status=$?
-        content_50="${command_16}"
-        split__5_v0 "${content_50}" "
+        content_52="${command_16}"
+        split__5_v0 "${content_52}" "
 "
-        lines_52=("${ret_split5_v0[@]}")
-        for line_53 in "${lines_52[@]}"; do
-            trim__11_v0 "${line_53}"
-            trimmed_54="${ret_trim11_v0}"
-            starts_with__23_v0 "${trimmed_54}" "#"
+        lines_54=("${ret_split5_v0[@]}")
+        for line_55 in "${lines_54[@]}"; do
+            trim__11_v0 "${line_55}"
+            trimmed_56="${ret_trim11_v0}"
+            starts_with__23_v0 "${trimmed_56}" "#"
             ret_starts_with23_v0__102_33="${ret_starts_with23_v0}"
-            if [ "$(( $([ "_${trimmed_54}" != "_" ]; echo $?) || ${ret_starts_with23_v0__102_33} ))" != 0 ]; then
+            if [ "$(( $([ "_${trimmed_56}" != "_" ]; echo $?) || ${ret_starts_with23_v0__102_33} ))" != 0 ]; then
                 continue
             fi
-            flags_45+=" -e ${trimmed_54}"
+            flags_47+=" -e ${trimmed_56}"
         done
     fi
-    ret_env_flags132_v0="${flags_45}"
+    ret_env_flags132_v0="${flags_47}"
     return 0
 }
 
@@ -268,7 +268,7 @@ volume_flags__133_v0() {
     __status=$?
     home_42="${command_19}"
     flags_39+=" -v ${pwd_40}:/workspace/${folder_41}"
-    config_dirs_43=(".codex" ".claude" ".gemini" ".opencode" ".code")
+    config_dirs_43=(".codex" ".claude" ".gemini" ".opencode" ".code" ".copilot")
     for dir_44 in "${config_dirs_43[@]}"; do
         dir_exists__36_v0 "${home_42}/${dir_44}"
         ret_dir_exists36_v0__122_12="${ret_dir_exists36_v0}"
@@ -276,14 +276,22 @@ volume_flags__133_v0() {
             flags_39+=" -v ${home_42}/${dir_44}:/workspace/${dir_44}"
         fi
     done
+    config_files_45=(".claude.json")
+    for file_46 in "${config_files_45[@]}"; do
+        file_exists__37_v0 "${home_42}/${file_46}"
+        ret_file_exists37_v0__129_12="${ret_file_exists37_v0}"
+        if [ "${ret_file_exists37_v0__129_12}" != 0 ]; then
+            flags_39+=" -v ${home_42}/${file_46}:/workspace/${file_46}"
+        fi
+    done
     dir_exists__36_v0 "${home_42}/.ssh"
-    ret_dir_exists36_v0__127_8="${ret_dir_exists36_v0}"
-    if [ "${ret_dir_exists36_v0__127_8}" != 0 ]; then
+    ret_dir_exists36_v0__134_8="${ret_dir_exists36_v0}"
+    if [ "${ret_dir_exists36_v0__134_8}" != 0 ]; then
         flags_39+=" -v ${home_42}/.ssh:/workspace/.ssh:ro"
     fi
     file_exists__37_v0 "${home_42}/.gitconfig"
-    ret_file_exists37_v0__131_8="${ret_file_exists37_v0}"
-    if [ "${ret_file_exists37_v0__131_8}" != 0 ]; then
+    ret_file_exists37_v0__138_8="${ret_file_exists37_v0}"
+    if [ "${ret_file_exists37_v0__138_8}" != 0 ]; then
         flags_39+=" -v ${home_42}/.gitconfig:/workspace/.gitconfig:ro"
     fi
     flags_39+=" -v code-sandbox-bun-cache:/home/code/.bun"
@@ -300,9 +308,10 @@ show_menu__134_v0() {
     echo "  3) codex     - OpenAI Codex"
     echo "  4) gemini    - Gemini CLI"
     echo "  5) opencode  - OpenCode"
-    echo "  6) shell     - Bash shell"
+    echo "  6) copilot   - GitHub Copilot"
+    echo "  7) shell     - Bash shell"
     echo ""
-    input_prompt__103_v0 "Choice [1-6]: "
+    input_prompt__103_v0 "Choice [1-7]: "
     choice_27="${ret_input_prompt103_v0}"
     if [ "$([ "_${choice_27}" != "_1" ]; echo $?)" != 0 ]; then
         ret_show_menu134_v0="code"
@@ -325,6 +334,10 @@ show_menu__134_v0() {
         return 0
     fi
     if [ "$([ "_${choice_27}" != "_6" ]; echo $?)" != 0 ]; then
+        ret_show_menu134_v0="copilot"
+        return 0
+    fi
+    if [ "$([ "_${choice_27}" != "_7" ]; echo $?)" != 0 ]; then
         ret_show_menu134_v0="bash"
         return 0
     fi
@@ -339,8 +352,8 @@ collect_args__135_v0() {
     j_16="${start}"
     while :
     do
-        __length_21=("${args[@]}")
-        if [ "$(( ${j_16} >= ${#__length_21[@]} ))" != 0 ]; then
+        __length_22=("${args[@]}")
+        if [ "$(( ${j_16} >= ${#__length_22[@]} ))" != 0 ]; then
             break
         fi
         if [ "$([ "_${result_15}" == "_" ]; echo $?)" != 0 ]; then
@@ -372,16 +385,16 @@ resolve_cmd__136_v0() {
 
 get_container_state__137_v0() {
     local cname=$1
-    command_22="$(docker inspect "${cname}" 2>/dev/null)"
+    command_23="$(docker inspect "${cname}" 2>/dev/null)"
     __status=$?
     if [ "${__status}" != 0 ]; then
         ret_get_container_state137_v0="none"
         return 0
     fi
-    json_24="${command_22}"
-    command_23="$(echo "${json_24}" | jq -r ".[0].State.Status")"
+    json_24="${command_23}"
+    command_24="$(echo "${json_24}" | jq -r ".[0].State.Status")"
     __status=$?
-    state_25="${command_23}"
+    state_25="${command_24}"
     trim__11_v0 "${state_25}"
     ret_get_container_state137_v0="${ret_trim11_v0}"
     return 0
@@ -399,15 +412,15 @@ explicit_cmd_11=0
 i_12=1
 while :
 do
-    __length_25=("${args_4[@]}")
-    if [ "$(( ${i_12} >= ${#__length_25[@]} ))" != 0 ]; then
+    __length_26=("${args_4[@]}")
+    if [ "$(( ${i_12} >= ${#__length_26[@]} ))" != 0 ]; then
         break
     fi
     arg_13="${args_4[${i_12}]}"
     starts_with__23_v0 "${arg_13}" "--languages="
-    ret_starts_with23_v0__234_13="${ret_starts_with23_v0}"
+    ret_starts_with23_v0__243_13="${ret_starts_with23_v0}"
     starts_with__23_v0 "${arg_13}" "-"
-    ret_starts_with23_v0__242_13="${ret_starts_with23_v0}"
+    ret_starts_with23_v0__251_13="${ret_starts_with23_v0}"
     if [ "$([ "_${arg_13}" != "_--pull" ]; echo $?)" != 0 ]; then
         do_pull_5=1
     elif [ "$([ "_${arg_13}" != "_--build" ]; echo $?)" != 0 ]; then
@@ -417,24 +430,24 @@ do
     elif [ "$(( $([ "_${arg_13}" != "_--help" ]; echo $?) || $([ "_${arg_13}" != "_-h" ]; echo $?) ))" != 0 ]; then
         help_mode_8=1
     elif [ "$([ "_${arg_13}" != "_--languages" ]; echo $?)" != 0 ]; then
-        __length_26=("${args_4[@]}")
-        if [ "$(( $(( ${i_12} + 1 )) >= ${#__length_26[@]} ))" != 0 ]; then
+        __length_27=("${args_4[@]}")
+        if [ "$(( $(( ${i_12} + 1 )) >= ${#__length_27[@]} ))" != 0 ]; then
             echo "Error: --languages requires a value."
             echo "Use --help for usage."
             exit 1
         fi
         i_12="$(( ${i_12} + 1 ))"
         languages_9="${args_4[${i_12}]}"
-    elif [ "${ret_starts_with23_v0__234_13}" != 0 ]; then
-        command_27="$(echo "${arg_13}" | cut -d= -f2-)"
+    elif [ "${ret_starts_with23_v0__243_13}" != 0 ]; then
+        command_28="$(echo "${arg_13}" | cut -d= -f2-)"
         __status=$?
-        languages_9="${command_27}"
+        languages_9="${command_28}"
     elif [ "$([ "_${arg_13}" != "_--" ]; echo $?)" != 0 ]; then
         collect_args__135_v0 args_4[@] "$(( ${i_12} + 1 ))"
         pass_args_10="${ret_collect_args135_v0}"
         explicit_cmd_11=1
         break
-    elif [ "${ret_starts_with23_v0__242_13}" != 0 ]; then
+    elif [ "${ret_starts_with23_v0__251_13}" != 0 ]; then
         echo "Error: Unknown option: ${arg_13}"
         echo "Use --help for usage."
         exit 1
@@ -496,19 +509,19 @@ fi
 resolve_cmd__136_v0 "${shell_mode_7}" "${explicit_cmd_11}" "${pass_args_10}"
 cmd_31="${ret_resolve_cmd136_v0}"
 # Build docker run command
-command_28="$(id -u)"
+command_29="$(id -u)"
 __status=$?
-host_uid_32="${command_28}"
-command_29="$(id -g)"
+host_uid_32="${command_29}"
+command_30="$(id -g)"
 __status=$?
-host_gid_33="${command_29}"
+host_gid_33="${command_30}"
 term_34="xterm-256color"
-command_30="$(pwd -P)"
+command_31="$(pwd -P)"
 __status=$?
-pwd_35="${command_30}"
-command_31="$(basename "${pwd_35}")"
+pwd_35="${command_31}"
+command_32="$(basename "${pwd_35}")"
 __status=$?
-folder_36="${command_31}"
+folder_36="${command_32}"
 project_dir_37="/workspace/${folder_36}"
 run_cmd_38="docker run -it --rm"
 run_cmd_38+=" --name ${cname_23}"
