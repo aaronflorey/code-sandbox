@@ -16,13 +16,13 @@ fun collect_args(args: [Text], start: Int): Text {
 
 fun setup_user(host_uid: Text, host_gid: Text, home_dir: Text): Null {
     silent $ getent group code $ failed {
-        $ groupadd -g "{host_gid}" code $ failed {
-            trust $ groupadd code $
+        silent $ groupadd -g "{host_gid}" code $ failed {
+            silent trust $ groupadd code $
         }
     }
     silent $ id code $ failed {
-        $ useradd -m -d "{home_dir}" -u "{host_uid}" -g code -s /bin/bash code $ failed {
-            trust $ useradd -m -d "{home_dir}" -g code -s /bin/bash code $
+        silent $ useradd -m -d "{home_dir}" -u "{host_uid}" -g code -s /bin/bash code $ failed {
+            silent trust $ useradd -m -d "{home_dir}" -g code -s /bin/bash code $
         }
     }
 }

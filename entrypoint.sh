@@ -119,20 +119,20 @@ setup_user__127_v0() {
     getent group code >/dev/null 2>&1
     __status=$?
     if [ "${__status}" != 0 ]; then
-        groupadd -g "${host_gid}" code
+        groupadd -g "${host_gid}" code >/dev/null 2>&1
         __status=$?
         if [ "${__status}" != 0 ]; then
-            groupadd code
+            groupadd code >/dev/null 2>&1
             __status=$?
         fi
     fi
     id code >/dev/null 2>&1
     __status=$?
     if [ "${__status}" != 0 ]; then
-        useradd -m -d "${home_dir}" -u "${host_uid}" -g code -s /bin/bash code
+        useradd -m -d "${home_dir}" -u "${host_uid}" -g code -s /bin/bash code >/dev/null 2>&1
         __status=$?
         if [ "${__status}" != 0 ]; then
-            useradd -m -d "${home_dir}" -g code -s /bin/bash code
+            useradd -m -d "${home_dir}" -g code -s /bin/bash code >/dev/null 2>&1
             __status=$?
         fi
     fi
