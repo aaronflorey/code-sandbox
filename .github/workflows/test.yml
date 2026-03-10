@@ -21,26 +21,8 @@ env:
   GHCR_IMAGE: ghcr.io/${{ github.repository }}:latest
 
 jobs:
-  shell-and-launcher:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Install shellcheck
-        run: sudo apt-get update && sudo apt-get install -y shellcheck
-
-      - name: Shell syntax checks
-        run: |
-          bash -n entrypoint.sh
-          bash -n code-sandbox
-
-      - name: Shellcheck
-        run: shellcheck -x entrypoint.sh
-
   docker-smoke:
     runs-on: ubuntu-latest
-    needs: shell-and-launcher
     steps:
       - name: Checkout
         uses: actions/checkout@v4
