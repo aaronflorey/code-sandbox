@@ -245,7 +245,7 @@ install_languages__134_v0() {
             fi
             if [ "$([ "_${l_16}" != "_all" ]; echo $?)" != 0 ]; then
                 echo "Installing all languages via mise (php, go, rust, ruby, java, python, zig, erlang, elixir) ..."
-                gosu code mise use -g ubi:adwinying/php@8.4 go@latest rust@latest ruby@latest java@latest python@latest zig@latest erlang@latest elixir@latest
+                gosu code mise use -g github:adwinying/php@8.4 go@latest rust@latest ruby@latest java@latest python@latest zig@latest erlang@latest elixir@latest
                 __status=$?
                 gosu code mise reshim
                 __status=$?
@@ -254,7 +254,7 @@ install_languages__134_v0() {
             if [ "$(( $(( $(( $(( $(( $(( $(( $(( $([ "_${l_16}" != "_php" ]; echo $?) || $([ "_${l_16}" != "_go" ]; echo $?) )) || $([ "_${l_16}" != "_rust" ]; echo $?) )) || $([ "_${l_16}" != "_ruby" ]; echo $?) )) || $([ "_${l_16}" != "_java" ]; echo $?) )) || $([ "_${l_16}" != "_python" ]; echo $?) )) || $([ "_${l_16}" != "_zig" ]; echo $?) )) || $([ "_${l_16}" != "_erlang" ]; echo $?) )) || $([ "_${l_16}" != "_elixir" ]; echo $?) ))" != 0 ]; then
                 echo "Installing ${l_16} via mise ..."
                 if [ "$([ "_${l_16}" != "_php" ]; echo $?)" != 0 ]; then
-                    gosu code mise use -g ubi:adwinying/php@8.4
+                    gosu code mise use -g github:adwinying/php@8.4
                     __status=$?
                 else
                     gosu code mise use -g "${l_16}@latest"
@@ -281,7 +281,7 @@ install_composer__135_v0() {
     ret_is_command103_v0__120_30="${ret_is_command103_v0}"
     if [ "$(( ${php_available_17} && $(( ! ${ret_is_command103_v0__120_30} )) ))" != 0 ]; then
         echo "Installing Composer ..."
-        gosu code mise use -g ubi:composer/composer
+        gosu code mise use -g github:composer/composer
         __status=$?
         gosu code mise reshim
         __status=$?

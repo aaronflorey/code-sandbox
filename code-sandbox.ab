@@ -3,6 +3,9 @@ import { env_var_get, input_prompt } from "std/env"
 import { trim, split, starts_with, slice, rpad, uppercase } from "std/text"
 
 let IMAGE_NAME = "ghcr.io/aaronflorey/code-sandbox:latest"
+let UPDATE_CHECK_INTERVAL_SECONDS = 43200
+let SCRIPT_REPO = "aaronflorey/code-sandbox"
+let SCRIPT_COMMIT = "2b6f30f39caec5495ec82db8183d1d953a5c4127"
 
 fun show_help() {
     echo "Usage: code-sandbox [options] [command [args...]]"
@@ -10,10 +13,12 @@ fun show_help() {
     echo "Options:"
     echo "  --build                 Build the local Docker image"
     echo "  --pull                  Pull the latest pre-built Docker image"
+    echo "  --update                Force an immediate update check before launch"
     echo "  --shell                 Open a bash shell (skip agent menu)"
     echo "  --languages <list>      Install mise languages (comma-separated)"
     echo "  --languages=<list>      Same as above"
     echo "  -h, --help              Show this help message"
+    echo "  (env) CODE_SANDBOX_NO_UPDATE_CHECK=1 Disable periodic auto-pull checks"
     echo ""
     echo "Command Passing:"
     echo "  Any non-option argument is treated as the container command."
@@ -23,6 +28,117 @@ fun show_help() {
     echo "  code-sandbox --shell"
     echo "  code-sandbox --languages go,rust -- shell"
     echo "  code-sandbox -- codex --help"
+}
+
+fun update_check_stamp_path(): Text {
+    let home = trust $ printenv HOME $
+    return "{home}/.cache/code-sandbox/last-update-check"
+}
+
+fun should_check_for_updates(stamp_file: Text): Bool {
+    if not file_exists(stamp_file) {
+        return true
+    }
+
+    let now_epoch = trust $ date +%s $
+    let last_check = trust $ cat "{stamp_file}" 2>/dev/null || echo "0" $
+    let now_epoch_trimmed = trim(now_epoch)
+    let last_check_trimmed = trim(last_check)
+    let last_valid = trust $ echo "{last_check_trimmed}" | grep -E "^[0-9][0-9]*\$" || true $
+    if trim(last_valid) == "" {
+        return true
+    }
+    let elapsed = trust $ expr "{now_epoch_trimmed}" - "{last_check_trimmed}" $
+    let elapsed_trimmed = trim(elapsed)
+    let should_check = trust $ [ "{elapsed_trimmed}" -ge "{UPDATE_CHECK_INTERVAL_SECONDS}" ] && echo "1" || echo "0" $
+
+    return trim(should_check) == "1"
+}
+
+fun write_update_check_stamp(stamp_file: Text): Null {
+    let cache_dir = trust $ dirname "{stamp_file}" $
+    trust $ mkdir -p "{cache_dir}" $
+    let now_epoch = trust $ date +%s $
+    trust $ echo "{now_epoch}" > "{stamp_file}" $
+}
+
+fun parse_bool(value: Text): Bool {
+    let normalized = uppercase(trim(value))
+    return normalized == "1" or normalized == "TRUE" or normalized == "YES" or normalized == "Y" or normalized == "ON"
+}
+
+fun fetch_main_commit(): Text {
+    let meta_url = "https://api.github.com/repos/{SCRIPT_REPO}/commits/main"
+    let response = $ curl -fsSL "{meta_url}" 2>/dev/null $ failed {
+        return ""
+    }
+    let commit = trust $ echo "{response}" | jq -r ".sha // empty" 2>/dev/null || true $
+    return trim(commit)
+}
+
+fun check_script_update_and_pull(): Bool {
+    if SCRIPT_COMMIT == "" or SCRIPT_COMMIT == "unknown" {
+        return false
+    }
+
+    let latest_commit = fetch_main_commit()
+    if latest_commit == "" {
+        return false
+    }
+
+    if latest_commit != SCRIPT_COMMIT {
+        let current_short = slice(SCRIPT_COMMIT, 0, 7)
+        let latest_short = slice(latest_commit, 0, 7)
+
+        echo "New code-sandbox launcher version detected ({current_short} -> {latest_short})."
+        echo "Pulling latest sandbox image so tools/runtime stay aligned ..."
+        let pull_failed = false
+        $ docker pull "{IMAGE_NAME}" $ failed {
+            pull_failed = true
+        }
+        if pull_failed {
+            echo "Warning: image pull failed while checking launcher updates."
+        }
+        echo "Update launcher with:"
+        echo "  curl -fsSL https://raw.githubusercontent.com/{SCRIPT_REPO}/main/code-sandbox -o /usr/local/bin/code-sandbox"
+        echo "  chmod +x /usr/local/bin/code-sandbox"
+        return not pull_failed
+    }
+
+    return false
+}
+
+fun maybe_check_for_updates(force_check: Bool): Null {
+    let no_update_check = env_var_get("CODE_SANDBOX_NO_UPDATE_CHECK") failed { "" }
+    let update_check_enabled = force_check or not parse_bool(no_update_check)
+
+    if update_check_enabled {
+        let stamp_file = update_check_stamp_path()
+        if force_check or should_check_for_updates(stamp_file) {
+            let pulled_for_script_update = check_script_update_and_pull()
+            if pulled_for_script_update {
+                write_update_check_stamp(stamp_file)
+            } else {
+                echo "Checking for updated sandbox image ..."
+                let pull_failed = false
+                let pull_output = $ docker pull "{IMAGE_NAME}" 2>&1 $ failed {
+                    pull_failed = true
+                    ""
+                }
+
+                if pull_failed {
+                    echo "Warning: update check failed; continuing with local image."
+                } else {
+                    write_update_check_stamp(stamp_file)
+
+                    let pulled_new = trust $ printf "%s\n" "{pull_output}" | grep -E "Downloaded newer image|Status: Downloaded newer image" || true $
+                    if trim(pulled_new) != "" {
+                        echo "Updated local image to the latest published version."
+                    }
+                }
+            }
+        }
+    }
 }
 
 fun pull_image() {
@@ -44,10 +160,18 @@ fun build_image() {
     $ docker build -t "{IMAGE_NAME}" "{script_dir}" $?
 }
 
-fun ensure_image() {
+fun ensure_image(force_update: Bool) {
+    let image_missing = false
     silent $ docker image inspect "{IMAGE_NAME}" $ failed {
+        image_missing = true
+    }
+
+    if image_missing {
         echo "Image {IMAGE_NAME} not found locally. Pulling..."
         pull_image()?
+        write_update_check_stamp(update_check_stamp_path())
+    } else {
+        maybe_check_for_updates(force_update)
     }
 }
 
@@ -376,6 +500,7 @@ fun sandbox_exit(sandbox_dir: Text, project_dir: Text): Null {
 main(args) {
     let do_pull = false
     let do_build = false
+    let do_update = false
     let shell_mode = false
     let help_mode = false
     let languages = "__prompt__"
@@ -396,6 +521,9 @@ main(args) {
             }
             arg == "--build" {
                 do_build = true
+            }
+            arg == "--update" {
+                do_update = true
             }
             arg == "--shell" {
                 shell_mode = true
@@ -449,7 +577,7 @@ main(args) {
             pull_image()?
         }
         else {
-            ensure_image()?
+            ensure_image(do_update)?
         }
     }
 
