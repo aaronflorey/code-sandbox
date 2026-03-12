@@ -227,14 +227,14 @@ setup_mise_env__133_v0() {
 install_php__134_v0() {
     local home_dir=$1
     local user=$2
-    gosu "${user}" env HOME="${home_dir}" mise use -g github:adwinying/php@8.4 >/dev/null 2>&1
+    gosu "${user}" env HOME="${home_dir}" mise use -g github:aaronflorey/php@8.4 >/dev/null 2>&1
     __status=$?
     if [ "${__status}" != 0 ]; then
         # Corrupted cached archives can cause "invalid gzip header" errors.
         # Clear cached/downloaded PHP artifacts and retry once.
-        rm -rf "${home_dir}/.local/share/mise/downloads/github-adwinying-php" "${home_dir}/.local/share/mise/installs/github-adwinying-php"
+        rm -rf "${home_dir}/.local/share/mise/downloads/github-aaronflorey-php" "${home_dir}/.local/share/mise/installs/github-aaronflorey-php"
         __status=$?
-        gosu "${user}" env HOME="${home_dir}" mise use -g github:adwinying/php@8.4
+        gosu "${user}" env HOME="${home_dir}" mise use -g github:aaronflorey/php@8.4
         __status=$?
     fi
 }
@@ -300,9 +300,11 @@ install_composer__136_v0() {
     ret_is_command103_v0__138_30="${ret_is_command103_v0}"
     if [ "$(( ${php_available_20} && $(( ! ${ret_is_command103_v0__138_30} )) ))" != 0 ]; then
         echo "Installing Composer ..."
-        gosu "${user}" env HOME="${home_dir}" mise use -g github:composer/composer
+        gosu "${user}" env HOME="${home_dir}" curl -fsSL "https://getcomposer.org/download/latest-stable/composer.phar" -o "${home_dir}/.local/bin/composer"
         __status=$?
-        gosu "${user}" env HOME="${home_dir}" mise reshim
+        chmod +x "${home_dir}/.local/bin/composer"
+        __status=$?
+        chown "${user}:${user}" "${home_dir}/.local/bin/composer" >/dev/null 2>&1
         __status=$?
     fi
 }
@@ -361,8 +363,8 @@ __status=$?
 export FORCE_COLOR=1
 __status=$?
 dir_exists__39_v0 "${project_dir_7}"
-ret_dir_exists39_v0__176_8="${ret_dir_exists39_v0}"
-if [ "${ret_dir_exists39_v0__176_8}" != 0 ]; then
+ret_dir_exists39_v0__177_8="${ret_dir_exists39_v0}"
+if [ "${ret_dir_exists39_v0__177_8}" != 0 ]; then
     cd "${project_dir_7}"
     __status=$?
 fi

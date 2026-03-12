@@ -86,11 +86,11 @@ fun setup_mise_env(home_dir: Text, project_dir: Text): Null {
 }
 
 fun install_php(home_dir: Text, user: Text): Null {
-    silent $ gosu "{user}" env HOME="{home_dir}" mise use -g github:adwinying/php@8.4 $ failed {
+    silent $ gosu "{user}" env HOME="{home_dir}" mise use -g github:aaronflorey/php@8.4 $ failed {
         // Corrupted cached archives can cause "invalid gzip header" errors.
         // Clear cached/downloaded PHP artifacts and retry once.
-        trust $ rm -rf "{home_dir}/.local/share/mise/downloads/github-adwinying-php" "{home_dir}/.local/share/mise/installs/github-adwinying-php" $
-        trust $ gosu "{user}" env HOME="{home_dir}" mise use -g github:adwinying/php@8.4 $
+        trust $ rm -rf "{home_dir}/.local/share/mise/downloads/github-aaronflorey-php" "{home_dir}/.local/share/mise/installs/github-aaronflorey-php" $
+        trust $ gosu "{user}" env HOME="{home_dir}" mise use -g github:aaronflorey/php@8.4 $
     }
 }
 
@@ -137,8 +137,9 @@ fun install_composer(home_dir: Text, user: Text): Null {
     }
     if php_available and not is_command("composer") {
         echo "Installing Composer ..."
-        trust $ gosu "{user}" env HOME="{home_dir}" mise use -g github:composer/composer $
-        trust $ gosu "{user}" env HOME="{home_dir}" mise reshim $
+        trust $ gosu "{user}" env HOME="{home_dir}" curl -fsSL "https://getcomposer.org/download/latest-stable/composer.phar" -o "{home_dir}/.local/bin/composer" $
+        trust $ chmod +x "{home_dir}/.local/bin/composer" $
+        silent trust $ chown "{user}:{user}" "{home_dir}/.local/bin/composer" $
     }
 }
 
