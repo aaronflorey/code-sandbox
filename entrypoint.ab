@@ -77,12 +77,28 @@ fun setup_code_symlink(home_dir: Text, user: Text): Null {
     }
 }
 
-fun install_languages(sandbox_languages: Text, project_dir: Text, user: Text): Null {
+fun setup_mise_env(home_dir: Text, project_dir: Text): Null {
+    let trusted_paths = "{home_dir}/.config/mise/config.toml:{project_dir}/.mise.toml:{project_dir}/mise.toml"
+    trust $ export MISE_GLOBAL_CONFIG_FILE="{home_dir}/.config/mise/config.toml" $
+    trust $ export MISE_GLOBAL_CONFIG_ROOT="{home_dir}" $
+    trust $ export MISE_TRUSTED_CONFIG_PATHS="{trusted_paths}" $
+}
+
+fun install_php(home_dir: Text, user: Text): Null {
+    silent $ gosu "{user}" env HOME="{home_dir}" mise use -g github:adwinying/php@8.4 $ failed {
+        // Corrupted cached archives can cause "invalid gzip header" errors.
+        // Clear cached/downloaded PHP artifacts and retry once.
+        trust $ rm -rf "{home_dir}/.local/share/mise/downloads/github-adwinying-php" "{home_dir}/.local/share/mise/installs/github-adwinying-php" $
+        trust $ gosu "{user}" env HOME="{home_dir}" mise use -g github:adwinying/php@8.4 $
+    }
+}
+
+fun install_languages(sandbox_languages: Text, project_dir: Text, home_dir: Text, user: Text): Null {
     if sandbox_languages == "__mise_toml__" {
         echo "Installing languages from .mise.toml ..."
         trust $ cd "{project_dir}" $
-        trust $ gosu "{user}" mise install -y $
-        trust $ gosu "{user}" mise reshim $
+        trust $ gosu "{user}" env HOME="{home_dir}" mise install -y $
+        trust $ gosu "{user}" env HOME="{home_dir}" mise reshim $
     } else {
         let langs = split(sandbox_languages, ",")
         for lang in langs {
@@ -90,17 +106,18 @@ fun install_languages(sandbox_languages: Text, project_dir: Text, user: Text): N
             if l == "": continue
             if l == "all" {
                 echo "Installing all languages via mise (php, go, rust, ruby, java, python, zig, erlang, elixir) ..."
-                trust $ gosu "{user}" mise use -g github:adwinying/php@8.4 go@latest rust@latest ruby@latest java@latest python@latest zig@latest erlang@latest elixir@latest $
-                trust $ gosu "{user}" mise reshim $
+                install_php(home_dir, user)
+                trust $ gosu "{user}" env HOME="{home_dir}" mise use -g go@latest rust@latest ruby@latest java@latest python@latest zig@latest erlang@latest elixir@latest $
+                trust $ gosu "{user}" env HOME="{home_dir}" mise reshim $
                 break
             }
             if {
                 l == "php" or l == "go" or l == "rust" or l == "ruby" or l == "java" or l == "python" or l == "zig" or l == "erlang" or l == "elixir" {
                     echo "Installing {l} via mise ..."
                     if l == "php" {
-                        trust $ gosu "{user}" mise use -g github:adwinying/php@8.4 $
+                        install_php(home_dir, user)
                     } else {
-                        trust $ gosu "{user}" mise use -g "{l}@latest" $
+                        trust $ gosu "{user}" env HOME="{home_dir}" mise use -g "{l}@latest" $
                     }
                 }
                 else {
@@ -108,19 +125,19 @@ fun install_languages(sandbox_languages: Text, project_dir: Text, user: Text): N
                 }
             }
         }
-        trust $ gosu "{user}" mise reshim $
+        trust $ gosu "{user}" env HOME="{home_dir}" mise reshim $
     }
 }
 
 fun install_composer(home_dir: Text, user: Text): Null {
     let php_available = true
-    silent $ gosu "{user}" mise which php $ failed {
+    silent $ gosu "{user}" env HOME="{home_dir}" mise which php $ failed {
         php_available = false
     }
     if php_available and not is_command("composer") {
         echo "Installing Composer ..."
-        trust $ gosu "{user}" mise use -g github:composer/composer $
-        trust $ gosu "{user}" mise reshim $
+        trust $ gosu "{user}" env HOME="{home_dir}" mise use -g github:composer/composer $
+        trust $ gosu "{user}" env HOME="{home_dir}" mise reshim $
     }
 }
 
@@ -141,12 +158,13 @@ main(args) {
 
     let current_path = env_var_get("PATH") failed { "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" }
     trust $ export PATH="{home_dir}/.local/share/mise/shims:{home_dir}/.local/bin:/usr/local/bun/bin:{current_path}" $
+    setup_mise_env(home_dir, project_dir)
 
     setup_code_symlink(home_dir, user)
 
     let sandbox_languages = env_var_get("SANDBOX_LANGUAGES") failed { "" }
     if sandbox_languages != "" {
-        install_languages(sandbox_languages, project_dir, user)
+        install_languages(sandbox_languages, project_dir, home_dir, user)
     }
 
     install_composer(home_dir, user)

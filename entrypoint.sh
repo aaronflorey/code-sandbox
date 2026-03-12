@@ -6,10 +6,10 @@
 split__5_v0() {
     local text=$1
     local delimiter=$2
-    result_15=()
-    IFS="${delimiter}" read -rd '' -a result_15 < <(printf %s "$text")
+    result_16=()
+    IFS="${delimiter}" read -rd '' -a result_16 < <(printf %s "$text")
     __status=$?
-    ret_split5_v0=("${result_15[@]}")
+    ret_split5_v0=("${result_16[@]}")
     return 0
 }
 
@@ -201,8 +201,8 @@ setup_code_symlink__132_v0() {
         if [ "${ret_is_command103_v0__72_12}" != 0 ]; then
             command_5="$(command -v coder)"
             __status=$?
-            coder_path_13="${command_5}"
-            ln -sf "${coder_path_13}" "${home_dir}/.local/bin/code"
+            coder_path_14="${command_5}"
+            ln -sf "${coder_path_14}" "${home_dir}/.local/bin/code"
             __status=$?
             chown "${user}:${user}" "${home_dir}/.local/bin/code" >/dev/null 2>&1
             __status=$?
@@ -210,69 +210,97 @@ setup_code_symlink__132_v0() {
     fi
 }
 
-install_languages__133_v0() {
-    local sandbox_languages=$1
+setup_mise_env__133_v0() {
+    local home_dir=$1
     local project_dir=$2
-    local user=$3
-    if [ "$([ "_${sandbox_languages}" != "___mise_toml__" ]; echo $?)" != 0 ]; then
-        echo "Installing languages from .mise.toml ..."
-        cd "${project_dir}"
+    trusted_paths_13="${home_dir}/.config/mise/config.toml:${project_dir}/.mise.toml:${project_dir}/mise.toml"
+    export MISE_GLOBAL_CONFIG_FILE="${home_dir}/.config/mise/config.toml"
+    __status=$?
+    export MISE_GLOBAL_CONFIG_ROOT="${home_dir}"
+    __status=$?
+    export MISE_TRUSTED_CONFIG_PATHS="${trusted_paths_13}"
+    __status=$?
+}
+
+install_php__134_v0() {
+    local home_dir=$1
+    local user=$2
+    gosu "${user}" env HOME="${home_dir}" mise use -g github:adwinying/php@8.4 >/dev/null 2>&1
+    __status=$?
+    if [ "${__status}" != 0 ]; then
+        # Corrupted cached archives can cause "invalid gzip header" errors.
+        # Clear cached/downloaded PHP artifacts and retry once.
+        rm -rf "${home_dir}/.local/share/mise/downloads/github-adwinying-php" "${home_dir}/.local/share/mise/installs/github-adwinying-php"
         __status=$?
-        gosu "${user}" mise install -y
-        __status=$?
-        gosu "${user}" mise reshim
-        __status=$?
-    else
-        split__5_v0 "${sandbox_languages}" ","
-        langs_16=("${ret_split5_v0[@]}")
-        for lang_17 in "${langs_16[@]}"; do
-            trim__11_v0 "${lang_17}"
-            l_18="${ret_trim11_v0}"
-            if [ "$([ "_${l_18}" != "_" ]; echo $?)" != 0 ]; then
-                continue
-            fi
-            if [ "$([ "_${l_18}" != "_all" ]; echo $?)" != 0 ]; then
-                echo "Installing all languages via mise (php, go, rust, ruby, java, python, zig, erlang, elixir) ..."
-                gosu "${user}" mise use -g github:adwinying/php@8.4 go@latest rust@latest ruby@latest java@latest python@latest zig@latest erlang@latest elixir@latest
-                __status=$?
-                gosu "${user}" mise reshim
-                __status=$?
-                break
-            fi
-            if [ "$(( $(( $(( $(( $(( $(( $(( $(( $([ "_${l_18}" != "_php" ]; echo $?) || $([ "_${l_18}" != "_go" ]; echo $?) )) || $([ "_${l_18}" != "_rust" ]; echo $?) )) || $([ "_${l_18}" != "_ruby" ]; echo $?) )) || $([ "_${l_18}" != "_java" ]; echo $?) )) || $([ "_${l_18}" != "_python" ]; echo $?) )) || $([ "_${l_18}" != "_zig" ]; echo $?) )) || $([ "_${l_18}" != "_erlang" ]; echo $?) )) || $([ "_${l_18}" != "_elixir" ]; echo $?) ))" != 0 ]; then
-                echo "Installing ${l_18} via mise ..."
-                if [ "$([ "_${l_18}" != "_php" ]; echo $?)" != 0 ]; then
-                    gosu "${user}" mise use -g github:adwinying/php@8.4
-                    __status=$?
-                else
-                    gosu "${user}" mise use -g "${l_18}@latest"
-                    __status=$?
-                fi
-            else
-                echo "Unknown language: ${l_18} (skipping)"
-            fi
-        done
-        gosu "${user}" mise reshim
+        gosu "${user}" env HOME="${home_dir}" mise use -g github:adwinying/php@8.4
         __status=$?
     fi
 }
 
-install_composer__134_v0() {
+install_languages__135_v0() {
+    local sandbox_languages=$1
+    local project_dir=$2
+    local home_dir=$3
+    local user=$4
+    if [ "$([ "_${sandbox_languages}" != "___mise_toml__" ]; echo $?)" != 0 ]; then
+        echo "Installing languages from .mise.toml ..."
+        cd "${project_dir}"
+        __status=$?
+        gosu "${user}" env HOME="${home_dir}" mise install -y
+        __status=$?
+        gosu "${user}" env HOME="${home_dir}" mise reshim
+        __status=$?
+    else
+        split__5_v0 "${sandbox_languages}" ","
+        langs_17=("${ret_split5_v0[@]}")
+        for lang_18 in "${langs_17[@]}"; do
+            trim__11_v0 "${lang_18}"
+            l_19="${ret_trim11_v0}"
+            if [ "$([ "_${l_19}" != "_" ]; echo $?)" != 0 ]; then
+                continue
+            fi
+            if [ "$([ "_${l_19}" != "_all" ]; echo $?)" != 0 ]; then
+                echo "Installing all languages via mise (php, go, rust, ruby, java, python, zig, erlang, elixir) ..."
+                install_php__134_v0 "${home_dir}" "${user}"
+                gosu "${user}" env HOME="${home_dir}" mise use -g go@latest rust@latest ruby@latest java@latest python@latest zig@latest erlang@latest elixir@latest
+                __status=$?
+                gosu "${user}" env HOME="${home_dir}" mise reshim
+                __status=$?
+                break
+            fi
+            if [ "$(( $(( $(( $(( $(( $(( $(( $(( $([ "_${l_19}" != "_php" ]; echo $?) || $([ "_${l_19}" != "_go" ]; echo $?) )) || $([ "_${l_19}" != "_rust" ]; echo $?) )) || $([ "_${l_19}" != "_ruby" ]; echo $?) )) || $([ "_${l_19}" != "_java" ]; echo $?) )) || $([ "_${l_19}" != "_python" ]; echo $?) )) || $([ "_${l_19}" != "_zig" ]; echo $?) )) || $([ "_${l_19}" != "_erlang" ]; echo $?) )) || $([ "_${l_19}" != "_elixir" ]; echo $?) ))" != 0 ]; then
+                echo "Installing ${l_19} via mise ..."
+                if [ "$([ "_${l_19}" != "_php" ]; echo $?)" != 0 ]; then
+                    install_php__134_v0 "${home_dir}" "${user}"
+                else
+                    gosu "${user}" env HOME="${home_dir}" mise use -g "${l_19}@latest"
+                    __status=$?
+                fi
+            else
+                echo "Unknown language: ${l_19} (skipping)"
+            fi
+        done
+        gosu "${user}" env HOME="${home_dir}" mise reshim
+        __status=$?
+    fi
+}
+
+install_composer__136_v0() {
     local home_dir=$1
     local user=$2
-    php_available_19=1
-    gosu "${user}" mise which php >/dev/null 2>&1
+    php_available_20=1
+    gosu "${user}" env HOME="${home_dir}" mise which php >/dev/null 2>&1
     __status=$?
     if [ "${__status}" != 0 ]; then
-        php_available_19=0
+        php_available_20=0
     fi
     is_command__103_v0 "composer"
-    ret_is_command103_v0__120_30="${ret_is_command103_v0}"
-    if [ "$(( ${php_available_19} && $(( ! ${ret_is_command103_v0__120_30} )) ))" != 0 ]; then
+    ret_is_command103_v0__137_30="${ret_is_command103_v0}"
+    if [ "$(( ${php_available_20} && $(( ! ${ret_is_command103_v0__137_30} )) ))" != 0 ]; then
         echo "Installing Composer ..."
-        gosu "${user}" mise use -g github:composer/composer
+        gosu "${user}" env HOME="${home_dir}" mise use -g github:composer/composer
         __status=$?
-        gosu "${user}" mise reshim
+        gosu "${user}" env HOME="${home_dir}" mise reshim
         __status=$?
     fi
 }
@@ -314,24 +342,25 @@ fi
 current_path_12="${ret_env_var_get101_v0}"
 export PATH="${home_dir_6}/.local/share/mise/shims:${home_dir_6}/.local/bin:/usr/local/bun/bin:${current_path_12}"
 __status=$?
+setup_mise_env__133_v0 "${home_dir_6}" "${project_dir_7}"
 setup_code_symlink__132_v0 "${home_dir_6}" "${user_9}"
 env_var_get__101_v0 "SANDBOX_LANGUAGES"
 __status=$?
 if [ "${__status}" != 0 ]; then
     :
 fi
-sandbox_languages_14="${ret_env_var_get101_v0}"
-if [ "$([ "_${sandbox_languages_14}" == "_" ]; echo $?)" != 0 ]; then
-    install_languages__133_v0 "${sandbox_languages_14}" "${project_dir_7}" "${user_9}"
+sandbox_languages_15="${ret_env_var_get101_v0}"
+if [ "$([ "_${sandbox_languages_15}" == "_" ]; echo $?)" != 0 ]; then
+    install_languages__135_v0 "${sandbox_languages_15}" "${project_dir_7}" "${home_dir_6}" "${user_9}"
 fi
-install_composer__134_v0 "${home_dir_6}" "${user_9}"
+install_composer__136_v0 "${home_dir_6}" "${user_9}"
 export COLORTERM=truecolor
 __status=$?
 export FORCE_COLOR=1
 __status=$?
 dir_exists__39_v0 "${project_dir_7}"
-ret_dir_exists39_v0__157_8="${ret_dir_exists39_v0}"
-if [ "${ret_dir_exists39_v0__157_8}" != 0 ]; then
+ret_dir_exists39_v0__175_8="${ret_dir_exists39_v0}"
+if [ "${ret_dir_exists39_v0__175_8}" != 0 ]; then
     cd "${project_dir_7}"
     __status=$?
 fi
