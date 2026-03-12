@@ -90,14 +90,18 @@ fun install_languages(sandbox_languages: Text, project_dir: Text): Null {
             if l == "": continue
             if l == "all" {
                 echo "Installing all languages via mise (php, go, rust, ruby, java, python, zig, erlang, elixir) ..."
-                trust $ gosu code mise use -g php@latest go@latest rust@latest ruby@latest java@latest python@latest zig@latest erlang@latest elixir@latest $
+                trust $ gosu code mise use -g ubi:adwinying/php@8.4 go@latest rust@latest ruby@latest java@latest python@latest zig@latest erlang@latest elixir@latest $
                 trust $ gosu code mise reshim $
                 break
             }
             if {
                 l == "php" or l == "go" or l == "rust" or l == "ruby" or l == "java" or l == "python" or l == "zig" or l == "erlang" or l == "elixir" {
                     echo "Installing {l} via mise ..."
-                    trust $ gosu code mise use -g "{l}@latest" $
+                    if l == "php" {
+                        trust $ gosu code mise use -g ubi:adwinying/php@8.4 $
+                    } else {
+                        trust $ gosu code mise use -g "{l}@latest" $
+                    }
                 }
                 else {
                     echo "Unknown language: {l} (skipping)"
@@ -115,7 +119,8 @@ fun install_composer(home_dir: Text): Null {
     }
     if php_available and not is_command("composer") {
         echo "Installing Composer ..."
-        trust $ curl -sS https://getcomposer.org/installer | gosu code php -- --install-dir="{home_dir}/.local/bin" --filename=composer $
+        trust $ gosu code mise use -g ubi:composer/composer $
+        trust $ gosu code mise reshim $
     }
 }
 

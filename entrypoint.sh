@@ -245,7 +245,7 @@ install_languages__134_v0() {
             fi
             if [ "$([ "_${l_16}" != "_all" ]; echo $?)" != 0 ]; then
                 echo "Installing all languages via mise (php, go, rust, ruby, java, python, zig, erlang, elixir) ..."
-                gosu code mise use -g php@latest go@latest rust@latest ruby@latest java@latest python@latest zig@latest erlang@latest elixir@latest
+                gosu code mise use -g ubi:adwinying/php@8.4 go@latest rust@latest ruby@latest java@latest python@latest zig@latest erlang@latest elixir@latest
                 __status=$?
                 gosu code mise reshim
                 __status=$?
@@ -253,8 +253,13 @@ install_languages__134_v0() {
             fi
             if [ "$(( $(( $(( $(( $(( $(( $(( $(( $([ "_${l_16}" != "_php" ]; echo $?) || $([ "_${l_16}" != "_go" ]; echo $?) )) || $([ "_${l_16}" != "_rust" ]; echo $?) )) || $([ "_${l_16}" != "_ruby" ]; echo $?) )) || $([ "_${l_16}" != "_java" ]; echo $?) )) || $([ "_${l_16}" != "_python" ]; echo $?) )) || $([ "_${l_16}" != "_zig" ]; echo $?) )) || $([ "_${l_16}" != "_erlang" ]; echo $?) )) || $([ "_${l_16}" != "_elixir" ]; echo $?) ))" != 0 ]; then
                 echo "Installing ${l_16} via mise ..."
-                gosu code mise use -g "${l_16}@latest"
-                __status=$?
+                if [ "$([ "_${l_16}" != "_php" ]; echo $?)" != 0 ]; then
+                    gosu code mise use -g ubi:adwinying/php@8.4
+                    __status=$?
+                else
+                    gosu code mise use -g "${l_16}@latest"
+                    __status=$?
+                fi
             else
                 echo "Unknown language: ${l_16} (skipping)"
             fi
@@ -273,10 +278,12 @@ install_composer__135_v0() {
         php_available_17=0
     fi
     is_command__103_v0 "composer"
-    ret_is_command103_v0__116_30="${ret_is_command103_v0}"
-    if [ "$(( ${php_available_17} && $(( ! ${ret_is_command103_v0__116_30} )) ))" != 0 ]; then
+    ret_is_command103_v0__120_30="${ret_is_command103_v0}"
+    if [ "$(( ${php_available_17} && $(( ! ${ret_is_command103_v0__120_30} )) ))" != 0 ]; then
         echo "Installing Composer ..."
-        curl -sS https://getcomposer.org/installer | gosu code php -- --install-dir="${home_dir}/.local/bin" --filename=composer
+        gosu code mise use -g ubi:composer/composer
+        __status=$?
+        gosu code mise reshim
         __status=$?
     fi
 }
@@ -333,8 +340,8 @@ __status=$?
 export FORCE_COLOR=1
 __status=$?
 dir_exists__39_v0 "${project_dir_7}"
-ret_dir_exists39_v0__152_8="${ret_dir_exists39_v0}"
-if [ "${ret_dir_exists39_v0__152_8}" != 0 ]; then
+ret_dir_exists39_v0__157_8="${ret_dir_exists39_v0}"
+if [ "${ret_dir_exists39_v0__157_8}" != 0 ]; then
     cd "${project_dir_7}"
     __status=$?
 fi
