@@ -5,7 +5,6 @@ import { trim, split, starts_with, slice, rpad, uppercase } from "std/text"
 let IMAGE_NAME = "ghcr.io/aaronflorey/code-sandbox:latest"
 let UPDATE_CHECK_INTERVAL_SECONDS = 43200
 let SCRIPT_REPO = "aaronflorey/code-sandbox"
-let SCRIPT_COMMIT = "2b6f30f39caec5495ec82db8183d1d953a5c4127"
 
 fun show_help() {
     echo "Usage: code-sandbox [options] [command [args...]]"
@@ -67,30 +66,44 @@ fun parse_bool(value: Text): Bool {
     return normalized == "1" or normalized == "TRUE" or normalized == "YES" or normalized == "Y" or normalized == "ON"
 }
 
-fun fetch_main_commit(): Text {
-    let meta_url = "https://api.github.com/repos/{SCRIPT_REPO}/commits/main"
-    let response = $ curl -fsSL "{meta_url}" 2>/dev/null $ failed {
+fun fetch_remote_launcher_hash(): Text {
+    let hash_url = "https://raw.githubusercontent.com/{SCRIPT_REPO}/main/LAUNCHER_HASH"
+    let response = $ curl -fsSL "{hash_url}" 2>/dev/null $ failed {
         return ""
     }
-    let commit = trust $ echo "{response}" | jq -r ".sha // empty" 2>/dev/null || true $
-    return trim(commit)
+    return trim(response)
+}
+
+fun get_local_launcher_hash(): Text {
+    let script_path = trust $ readlink -f "\$0" 2>/dev/null || realpath "\$0" 2>/dev/null || echo "\$0" $
+    let hash = ""
+    
+    // Try sha256sum first (Linux), then shasum (macOS)
+    hash = $ sha256sum "{script_path}" 2>/dev/null | cut -d' ' -f1 $ failed {
+        hash = $ shasum -a 256 "{script_path}" 2>/dev/null | cut -d' ' -f1 $ failed {
+            ""
+        }
+    }
+    
+    return trim(hash)
 }
 
 fun check_script_update_and_pull(): Bool {
-    if SCRIPT_COMMIT == "" or SCRIPT_COMMIT == "unknown" {
+    let local_hash = get_local_launcher_hash()
+    if local_hash == "" {
         return false
     }
 
-    let latest_commit = fetch_main_commit()
-    if latest_commit == "" {
+    let remote_hash = fetch_remote_launcher_hash()
+    if remote_hash == "" {
         return false
     }
 
-    if latest_commit != SCRIPT_COMMIT {
-        let current_short = slice(SCRIPT_COMMIT, 0, 7)
-        let latest_short = slice(latest_commit, 0, 7)
+    if remote_hash != local_hash {
+        let local_short = slice(local_hash, 0, 8)
+        let remote_short = slice(remote_hash, 0, 8)
 
-        echo "New code-sandbox launcher version detected ({current_short} -> {latest_short})."
+        echo "New code-sandbox launcher version detected ({local_short}... -> {remote_short}...)."
         echo "Pulling latest sandbox image so tools/runtime stay aligned ..."
         let pull_failed = false
         $ docker pull "{IMAGE_NAME}" $ failed {

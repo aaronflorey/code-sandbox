@@ -24,8 +24,16 @@ if "${COMPILE_LAUNCHER}"; then
     echo "Compiling code-sandbox.ab -> code-sandbox ..."
     amber build code-sandbox.ab code-sandbox
     chmod +x code-sandbox
-    git add code-sandbox
-    echo "Compiled code-sandbox added to commit."
+    
+    # Generate hash of compiled launcher for update checking
+    if command -v sha256sum &>/dev/null; then
+        sha256sum code-sandbox | cut -d' ' -f1 > LAUNCHER_HASH
+    else
+        shasum -a 256 code-sandbox | cut -d' ' -f1 > LAUNCHER_HASH
+    fi
+    
+    git add code-sandbox LAUNCHER_HASH
+    echo "Compiled code-sandbox and LAUNCHER_HASH added to commit."
 fi
 
 if "${COMPILE_ENTRYPOINT}"; then

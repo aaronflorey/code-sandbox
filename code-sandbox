@@ -6,10 +6,10 @@
 split__5_v0() {
     local text=$1
     local delimiter=$2
-    result_63=()
-    IFS="${delimiter}" read -rd '' -a result_63 < <(printf %s "$text")
+    result_64=()
+    IFS="${delimiter}" read -rd '' -a result_64 < <(printf %s "$text")
     __status=$?
-    ret_split5_v0=("${result_63[@]}")
+    ret_split5_v0=("${result_64[@]}")
     return 0
 }
 
@@ -53,8 +53,8 @@ starts_with__23_v0() {
     echo 1
   fi)"
     __status=$?
-    result_18="${command_4}"
-    ret_starts_with23_v0="$([ "_${result_18}" != "_1" ]; echo $?)"
+    result_17="${command_4}"
+    ret_starts_with23_v0="$([ "_${result_17}" != "_1" ]; echo $?)"
     return 0
 }
 
@@ -135,7 +135,6 @@ input_prompt__103_v0() {
 __IMAGE_NAME_3="ghcr.io/aaronflorey/code-sandbox:latest"
 __UPDATE_CHECK_INTERVAL_SECONDS_4=43200
 __SCRIPT_REPO_5="aaronflorey/code-sandbox"
-__SCRIPT_COMMIT_6="2b6f30f39caec5495ec82db8183d1d953a5c4127"
 show_help__128_v0() {
     echo "Usage: code-sandbox [options] [command [args...]]"
     echo ""
@@ -162,49 +161,49 @@ show_help__128_v0() {
 update_check_stamp_path__129_v0() {
     command_12="$(printenv HOME)"
     __status=$?
-    home_24="${command_12}"
-    ret_update_check_stamp_path129_v0="${home_24}/.cache/code-sandbox/last-update-check"
+    home_23="${command_12}"
+    ret_update_check_stamp_path129_v0="${home_23}/.cache/code-sandbox/last-update-check"
     return 0
 }
 
 should_check_for_updates__130_v0() {
     local stamp_file=$1
     file_exists__37_v0 "${stamp_file}"
-    ret_file_exists37_v0__39_12="${ret_file_exists37_v0}"
-    if [ "$(( ! ${ret_file_exists37_v0__39_12} ))" != 0 ]; then
+    ret_file_exists37_v0__38_12="${ret_file_exists37_v0}"
+    if [ "$(( ! ${ret_file_exists37_v0__38_12} ))" != 0 ]; then
         ret_should_check_for_updates130_v0=1
         return 0
     fi
     command_13="$(date +%s)"
     __status=$?
-    now_epoch_31="${command_13}"
+    now_epoch_30="${command_13}"
     command_14="$(cat "${stamp_file}" 2>/dev/null || echo "0")"
     __status=$?
-    last_check_32="${command_14}"
-    trim__11_v0 "${now_epoch_31}"
-    now_epoch_trimmed_33="${ret_trim11_v0}"
-    trim__11_v0 "${last_check_32}"
-    last_check_trimmed_34="${ret_trim11_v0}"
-    command_15="$(echo "${last_check_trimmed_34}" | grep -E "^[0-9][0-9]*$" || true)"
+    last_check_31="${command_14}"
+    trim__11_v0 "${now_epoch_30}"
+    now_epoch_trimmed_32="${ret_trim11_v0}"
+    trim__11_v0 "${last_check_31}"
+    last_check_trimmed_33="${ret_trim11_v0}"
+    command_15="$(echo "${last_check_trimmed_33}" | grep -E "^[0-9][0-9]*$" || true)"
     __status=$?
-    last_valid_35="${command_15}"
-    trim__11_v0 "${last_valid_35}"
-    ret_trim11_v0__48_8="${ret_trim11_v0}"
-    if [ "$([ "_${ret_trim11_v0__48_8}" != "_" ]; echo $?)" != 0 ]; then
+    last_valid_34="${command_15}"
+    trim__11_v0 "${last_valid_34}"
+    ret_trim11_v0__47_8="${ret_trim11_v0}"
+    if [ "$([ "_${ret_trim11_v0__47_8}" != "_" ]; echo $?)" != 0 ]; then
         ret_should_check_for_updates130_v0=1
         return 0
     fi
-    command_16="$(expr "${now_epoch_trimmed_33}" - "${last_check_trimmed_34}")"
+    command_16="$(expr "${now_epoch_trimmed_32}" - "${last_check_trimmed_33}")"
     __status=$?
-    elapsed_36="${command_16}"
-    trim__11_v0 "${elapsed_36}"
-    elapsed_trimmed_37="${ret_trim11_v0}"
-    command_17="$([ "${elapsed_trimmed_37}" -ge "${__UPDATE_CHECK_INTERVAL_SECONDS_4}" ] && echo "1" || echo "0")"
+    elapsed_35="${command_16}"
+    trim__11_v0 "${elapsed_35}"
+    elapsed_trimmed_36="${ret_trim11_v0}"
+    command_17="$([ "${elapsed_trimmed_36}" -ge "${__UPDATE_CHECK_INTERVAL_SECONDS_4}" ] && echo "1" || echo "0")"
     __status=$?
-    should_check_38="${command_17}"
-    trim__11_v0 "${should_check_38}"
-    ret_trim11_v0__55_12="${ret_trim11_v0}"
-    ret_should_check_for_updates130_v0="$([ "_${ret_trim11_v0__55_12}" != "_1" ]; echo $?)"
+    should_check_37="${command_17}"
+    trim__11_v0 "${should_check_37}"
+    ret_trim11_v0__54_12="${ret_trim11_v0}"
+    ret_should_check_for_updates130_v0="$([ "_${ret_trim11_v0__54_12}" != "_1" ]; echo $?)"
     return 0
 }
 
@@ -212,121 +211,140 @@ write_update_check_stamp__131_v0() {
     local stamp_file=$1
     command_18="$(dirname "${stamp_file}")"
     __status=$?
-    cache_dir_25="${command_18}"
-    mkdir -p "${cache_dir_25}"
+    cache_dir_24="${command_18}"
+    mkdir -p "${cache_dir_24}"
     __status=$?
     command_19="$(date +%s)"
     __status=$?
-    now_epoch_26="${command_19}"
-    echo "${now_epoch_26}" > "${stamp_file}"
+    now_epoch_25="${command_19}"
+    echo "${now_epoch_25}" > "${stamp_file}"
     __status=$?
 }
 
 parse_bool__132_v0() {
     local value=$1
     trim__11_v0 "${value}"
-    ret_trim11_v0__66_32="${ret_trim11_v0}"
-    uppercase__13_v0 "${ret_trim11_v0__66_32}"
-    normalized_28="${ret_uppercase13_v0}"
-    ret_parse_bool132_v0="$(( $(( $(( $(( $([ "_${normalized_28}" != "_1" ]; echo $?) || $([ "_${normalized_28}" != "_TRUE" ]; echo $?) )) || $([ "_${normalized_28}" != "_YES" ]; echo $?) )) || $([ "_${normalized_28}" != "_Y" ]; echo $?) )) || $([ "_${normalized_28}" != "_ON" ]; echo $?) ))"
+    ret_trim11_v0__65_32="${ret_trim11_v0}"
+    uppercase__13_v0 "${ret_trim11_v0__65_32}"
+    normalized_27="${ret_uppercase13_v0}"
+    ret_parse_bool132_v0="$(( $(( $(( $(( $([ "_${normalized_27}" != "_1" ]; echo $?) || $([ "_${normalized_27}" != "_TRUE" ]; echo $?) )) || $([ "_${normalized_27}" != "_YES" ]; echo $?) )) || $([ "_${normalized_27}" != "_Y" ]; echo $?) )) || $([ "_${normalized_27}" != "_ON" ]; echo $?) ))"
     return 0
 }
 
-fetch_main_commit__133_v0() {
-    meta_url_39="https://api.github.com/repos/${__SCRIPT_REPO_5}/commits/main"
-    command_20="$(curl -fsSL "${meta_url_39}" 2>/dev/null)"
+fetch_remote_launcher_hash__133_v0() {
+    hash_url_41="https://raw.githubusercontent.com/${__SCRIPT_REPO_5}/main/LAUNCHER_HASH"
+    command_20="$(curl -fsSL "${hash_url_41}" 2>/dev/null)"
     __status=$?
     if [ "${__status}" != 0 ]; then
-        ret_fetch_main_commit133_v0=""
+        ret_fetch_remote_launcher_hash133_v0=""
         return 0
     fi
-    response_40="${command_20}"
-    command_21="$(echo "${response_40}" | jq -r ".sha // empty" 2>/dev/null || true)"
-    __status=$?
-    commit_41="${command_21}"
-    trim__11_v0 "${commit_41}"
-    ret_fetch_main_commit133_v0="${ret_trim11_v0}"
+    response_42="${command_20}"
+    trim__11_v0 "${response_42}"
+    ret_fetch_remote_launcher_hash133_v0="${ret_trim11_v0}"
     return 0
 }
 
-check_script_update_and_pull__134_v0() {
-    if [ "$(( $([ "_${__SCRIPT_COMMIT_6}" != "_" ]; echo $?) || $([ "_${__SCRIPT_COMMIT_6}" != "_unknown" ]; echo $?) ))" != 0 ]; then
-        ret_check_script_update_and_pull134_v0=0
+get_local_launcher_hash__134_v0() {
+    command_21="$(readlink -f "$0" 2>/dev/null || realpath "$0" 2>/dev/null || echo "$0")"
+    __status=$?
+    script_path_38="${command_21}"
+    # Try sha256sum first (Linux), then shasum (macOS)
+    command_23="$(sha256sum "${script_path_38}" 2>/dev/null | cut -d' ' -f1)"
+    __status=$?
+    if [ "${__status}" != 0 ]; then
+        command_22="$(shasum -a 256 "${script_path_38}" 2>/dev/null | cut -d' ' -f1)"
+        __status=$?
+        if [ "${__status}" != 0 ]; then
+            :
+        fi
+    fi
+    hash_39="${command_23}"
+    trim__11_v0 "${hash_39}"
+    ret_get_local_launcher_hash134_v0="${ret_trim11_v0}"
+    return 0
+}
+
+check_script_update_and_pull__135_v0() {
+    get_local_launcher_hash__134_v0 
+    local_hash_40="${ret_get_local_launcher_hash134_v0}"
+    if [ "$([ "_${local_hash_40}" != "_" ]; echo $?)" != 0 ]; then
+        ret_check_script_update_and_pull135_v0=0
         return 0
     fi
-    fetch_main_commit__133_v0 
-    latest_commit_42="${ret_fetch_main_commit133_v0}"
-    if [ "$([ "_${latest_commit_42}" != "_" ]; echo $?)" != 0 ]; then
-        ret_check_script_update_and_pull134_v0=0
+    fetch_remote_launcher_hash__133_v0 
+    remote_hash_43="${ret_fetch_remote_launcher_hash133_v0}"
+    if [ "$([ "_${remote_hash_43}" != "_" ]; echo $?)" != 0 ]; then
+        ret_check_script_update_and_pull135_v0=0
         return 0
     fi
-    if [ "$([ "_${latest_commit_42}" == "_${__SCRIPT_COMMIT_6}" ]; echo $?)" != 0 ]; then
-        slice__25_v0 "${__SCRIPT_COMMIT_6}" 0 7
-        current_short_43="${ret_slice25_v0}"
-        slice__25_v0 "${latest_commit_42}" 0 7
-        latest_short_44="${ret_slice25_v0}"
-        echo "New code-sandbox launcher version detected (${current_short_43} -> ${latest_short_44})."
+    if [ "$([ "_${remote_hash_43}" == "_${local_hash_40}" ]; echo $?)" != 0 ]; then
+        slice__25_v0 "${local_hash_40}" 0 8
+        local_short_44="${ret_slice25_v0}"
+        slice__25_v0 "${remote_hash_43}" 0 8
+        remote_short_45="${ret_slice25_v0}"
+        echo "New code-sandbox launcher version detected (${local_short_44}... -> ${remote_short_45}...)."
         echo "Pulling latest sandbox image so tools/runtime stay aligned ..."
-        pull_failed_45=0
+        pull_failed_46=0
         docker pull "${__IMAGE_NAME_3}"
         __status=$?
         if [ "${__status}" != 0 ]; then
-            pull_failed_45=1
+            pull_failed_46=1
         fi
-        if [ "${pull_failed_45}" != 0 ]; then
+        if [ "${pull_failed_46}" != 0 ]; then
             echo "Warning: image pull failed while checking launcher updates."
         fi
         echo "Update launcher with:"
         echo "  curl -fsSL https://raw.githubusercontent.com/${__SCRIPT_REPO_5}/main/code-sandbox -o /usr/local/bin/code-sandbox"
         echo "  chmod +x /usr/local/bin/code-sandbox"
-        ret_check_script_update_and_pull134_v0="$(( ! ${pull_failed_45} ))"
+        ret_check_script_update_and_pull135_v0="$(( ! ${pull_failed_46} ))"
         return 0
     fi
-    ret_check_script_update_and_pull134_v0=0
+    ret_check_script_update_and_pull135_v0=0
     return 0
 }
 
-maybe_check_for_updates__135_v0() {
+maybe_check_for_updates__136_v0() {
     local force_check=$1
     env_var_get__100_v0 "CODE_SANDBOX_NO_UPDATE_CHECK"
     __status=$?
     if [ "${__status}" != 0 ]; then
         :
     fi
-    no_update_check_27="${ret_env_var_get100_v0}"
-    parse_bool__132_v0 "${no_update_check_27}"
-    ret_parse_bool132_v0__113_51="${ret_parse_bool132_v0}"
-    update_check_enabled_29="$(( ${force_check} || $(( ! ${ret_parse_bool132_v0__113_51} )) ))"
-    if [ "${update_check_enabled_29}" != 0 ]; then
+    no_update_check_26="${ret_env_var_get100_v0}"
+    parse_bool__132_v0 "${no_update_check_26}"
+    ret_parse_bool132_v0__126_51="${ret_parse_bool132_v0}"
+    update_check_enabled_28="$(( ${force_check} || $(( ! ${ret_parse_bool132_v0__126_51} )) ))"
+    if [ "${update_check_enabled_28}" != 0 ]; then
         update_check_stamp_path__129_v0 
-        stamp_file_30="${ret_update_check_stamp_path129_v0}"
-        should_check_for_updates__130_v0 "${stamp_file_30}"
-        ret_should_check_for_updates130_v0__117_27="${ret_should_check_for_updates130_v0}"
-        if [ "$(( ${force_check} || ${ret_should_check_for_updates130_v0__117_27} ))" != 0 ]; then
-            check_script_update_and_pull__134_v0 
-            pulled_for_script_update_46="${ret_check_script_update_and_pull134_v0}"
-            if [ "${pulled_for_script_update_46}" != 0 ]; then
-                write_update_check_stamp__131_v0 "${stamp_file_30}"
+        stamp_file_29="${ret_update_check_stamp_path129_v0}"
+        should_check_for_updates__130_v0 "${stamp_file_29}"
+        ret_should_check_for_updates130_v0__130_27="${ret_should_check_for_updates130_v0}"
+        if [ "$(( ${force_check} || ${ret_should_check_for_updates130_v0__130_27} ))" != 0 ]; then
+            check_script_update_and_pull__135_v0 
+            pulled_for_script_update_47="${ret_check_script_update_and_pull135_v0}"
+            if [ "${pulled_for_script_update_47}" != 0 ]; then
+                write_update_check_stamp__131_v0 "${stamp_file_29}"
             else
                 echo "Checking for updated sandbox image ..."
-                pull_failed_47=0
-                command_22="$(docker pull "${__IMAGE_NAME_3}" 2>&1)"
+                pull_failed_48=0
+                command_24="$(docker pull "${__IMAGE_NAME_3}" 2>&1)"
                 __status=$?
                 if [ "${__status}" != 0 ]; then
-                    pull_failed_47=1
+                    pull_failed_48=1
                 fi
-                pull_output_48="${command_22}"
-                if [ "${pull_failed_47}" != 0 ]; then
+                pull_output_49="${command_24}"
+                if [ "${pull_failed_48}" != 0 ]; then
                     echo "Warning: update check failed; continuing with local image."
                 else
-                    write_update_check_stamp__131_v0 "${stamp_file_30}"
-                    command_23="$(printf "%s
-" "${pull_output_48}" | grep -E "Downloaded newer image|Status: Downloaded newer image" || true)"
+                    write_update_check_stamp__131_v0 "${stamp_file_29}"
+                    command_25="$(printf "%s
+" "${pull_output_49}" | grep -E "Downloaded newer image|Status: Downloaded newer image" || true)"
                     __status=$?
-                    pulled_new_49="${command_23}"
-                    trim__11_v0 "${pulled_new_49}"
-                    ret_trim11_v0__135_24="${ret_trim11_v0}"
-                    if [ "$([ "_${ret_trim11_v0__135_24}" == "_" ]; echo $?)" != 0 ]; then
+                    pulled_new_50="${command_25}"
+                    trim__11_v0 "${pulled_new_50}"
+                    ret_trim11_v0__148_24="${ret_trim11_v0}"
+                    if [ "$([ "_${ret_trim11_v0__148_24}" == "_" ]; echo $?)" != 0 ]; then
                         echo "Updated local image to the latest published version."
                     fi
                 fi
@@ -335,225 +353,225 @@ maybe_check_for_updates__135_v0() {
     fi
 }
 
-pull_image__136_v0() {
+pull_image__137_v0() {
     echo "Pulling ${__IMAGE_NAME_3} ..."
     docker pull "${__IMAGE_NAME_3}"
     __status=$?
     if [ "${__status}" != 0 ]; then
-        ret_pull_image136_v0=''
+        ret_pull_image137_v0=''
         return "${__status}"
     fi
 }
 
-build_image__137_v0() {
-    command_24="$(readlink -f /proc/self/exe 2>/dev/null || which code-sandbox 2>/dev/null || echo ".")"
+build_image__138_v0() {
+    command_26="$(readlink -f /proc/self/exe 2>/dev/null || which code-sandbox 2>/dev/null || echo ".")"
     __status=$?
-    script_21="${command_24}"
-    command_25="$(dirname "${script_21}")"
+    script_20="${command_26}"
+    command_27="$(dirname "${script_20}")"
     __status=$?
-    script_dir_22="${command_25}"
-    file_exists__37_v0 "${script_dir_22}/Dockerfile"
-    ret_file_exists37_v0__153_12="${ret_file_exists37_v0}"
-    if [ "$(( ! ${ret_file_exists37_v0__153_12} ))" != 0 ]; then
-        echo "Error: Dockerfile not found in ${script_dir_22}"
+    script_dir_21="${command_27}"
+    file_exists__37_v0 "${script_dir_21}/Dockerfile"
+    ret_file_exists37_v0__166_12="${ret_file_exists37_v0}"
+    if [ "$(( ! ${ret_file_exists37_v0__166_12} ))" != 0 ]; then
+        echo "Error: Dockerfile not found in ${script_dir_21}"
         echo "Use --pull to fetch the pre-built image, or run from the repo directory to build locally."
         exit 1
     fi
     echo "Building ${__IMAGE_NAME_3} locally ..."
-    docker build -t "${__IMAGE_NAME_3}" "${script_dir_22}"
+    docker build -t "${__IMAGE_NAME_3}" "${script_dir_21}"
     __status=$?
     if [ "${__status}" != 0 ]; then
-        ret_build_image137_v0=''
+        ret_build_image138_v0=''
         return "${__status}"
     fi
 }
 
-ensure_image__138_v0() {
+ensure_image__139_v0() {
     local force_update=$1
-    image_missing_23=0
+    image_missing_22=0
     docker image inspect "${__IMAGE_NAME_3}" >/dev/null 2>&1
     __status=$?
     if [ "${__status}" != 0 ]; then
-        image_missing_23=1
+        image_missing_22=1
     fi
-    if [ "${image_missing_23}" != 0 ]; then
+    if [ "${image_missing_22}" != 0 ]; then
         echo "Image ${__IMAGE_NAME_3} not found locally. Pulling..."
-        pull_image__136_v0 
+        pull_image__137_v0 
         __status=$?
         if [ "${__status}" != 0 ]; then
-            ret_ensure_image138_v0=''
+            ret_ensure_image139_v0=''
             return "${__status}"
         fi
         update_check_stamp_path__129_v0 
-        ret_update_check_stamp_path129_v0__172_34="${ret_update_check_stamp_path129_v0}"
-        write_update_check_stamp__131_v0 "${ret_update_check_stamp_path129_v0__172_34}"
+        ret_update_check_stamp_path129_v0__185_34="${ret_update_check_stamp_path129_v0}"
+        write_update_check_stamp__131_v0 "${ret_update_check_stamp_path129_v0__185_34}"
     else
-        maybe_check_for_updates__135_v0 "${force_update}"
+        maybe_check_for_updates__136_v0 "${force_update}"
     fi
 }
 
-container_name__139_v0() {
-    command_26="$(pwd -P)"
+container_name__140_v0() {
+    command_28="$(pwd -P)"
     __status=$?
-    abs_path_50="${command_26}"
-    command_27="$(basename "${abs_path_50}")"
+    abs_path_51="${command_28}"
+    command_29="$(basename "${abs_path_51}")"
     __status=$?
-    base_51="${command_27}"
-    command_28="$(echo -n "${abs_path_50}" | md5sum 2>/dev/null || md5 -q -s "${abs_path_50}" 2>/dev/null || echo -n "${abs_path_50}" | shasum | cut -c1-32)"
+    base_52="${command_29}"
+    command_30="$(echo -n "${abs_path_51}" | md5sum 2>/dev/null || md5 -q -s "${abs_path_51}" 2>/dev/null || echo -n "${abs_path_51}" | shasum | cut -c1-32)"
     __status=$?
-    hash_52="${command_28}"
-    trim__11_v0 "${hash_52}"
-    ret_trim11_v0__182_30="${ret_trim11_v0}"
-    slice__25_v0 "${ret_trim11_v0__182_30}" 0 12
-    hash_trimmed_53="${ret_slice25_v0}"
-    ret_container_name139_v0="code-sandbox-${base_51}-${hash_trimmed_53}"
+    hash_53="${command_30}"
+    trim__11_v0 "${hash_53}"
+    ret_trim11_v0__195_30="${ret_trim11_v0}"
+    slice__25_v0 "${ret_trim11_v0__195_30}" 0 12
+    hash_trimmed_54="${ret_slice25_v0}"
+    ret_container_name140_v0="code-sandbox-${base_52}-${hash_trimmed_54}"
     return 0
 }
 
-csv_contains__140_v0() {
+csv_contains__141_v0() {
     local csv=$1
     local value=$2
     if [ "$([ "_${csv}" != "_" ]; echo $?)" != 0 ]; then
-        ret_csv_contains140_v0=0
+        ret_csv_contains141_v0=0
         return 0
     fi
     split__5_v0 "${csv}" ","
-    parts_64=("${ret_split5_v0[@]}")
-    for part_65 in "${parts_64[@]}"; do
-        trim__11_v0 "${part_65}"
-        ret_trim11_v0__193_12="${ret_trim11_v0}"
-        if [ "$([ "_${ret_trim11_v0__193_12}" != "_${value}" ]; echo $?)" != 0 ]; then
-            ret_csv_contains140_v0=1
+    parts_65=("${ret_split5_v0[@]}")
+    for part_66 in "${parts_65[@]}"; do
+        trim__11_v0 "${part_66}"
+        ret_trim11_v0__206_12="${ret_trim11_v0}"
+        if [ "$([ "_${ret_trim11_v0__206_12}" != "_${value}" ]; echo $?)" != 0 ]; then
+            ret_csv_contains141_v0=1
             return 0
         fi
     done
-    ret_csv_contains140_v0=0
+    ret_csv_contains141_v0=0
     return 0
 }
 
-append_csv_unique__141_v0() {
+append_csv_unique__142_v0() {
     local csv=$1
     local value=$2
-    csv_contains__140_v0 "${csv}" "${value}"
-    ret_csv_contains140_v0__202_8="${ret_csv_contains140_v0}"
-    if [ "${ret_csv_contains140_v0__202_8}" != 0 ]; then
-        ret_append_csv_unique141_v0="${csv}"
+    csv_contains__141_v0 "${csv}" "${value}"
+    ret_csv_contains141_v0__215_8="${ret_csv_contains141_v0}"
+    if [ "${ret_csv_contains141_v0__215_8}" != 0 ]; then
+        ret_append_csv_unique142_v0="${csv}"
         return 0
     fi
     if [ "$([ "_${csv}" != "_" ]; echo $?)" != 0 ]; then
-        ret_append_csv_unique141_v0="${value}"
+        ret_append_csv_unique142_v0="${value}"
         return 0
     fi
-    ret_append_csv_unique141_v0="${csv},${value}"
+    ret_append_csv_unique142_v0="${csv},${value}"
     return 0
 }
 
-marker_exists__142_v0() {
+marker_exists__143_v0() {
     local project_dir=$1
     local marker=$2
-    command_29="$(find "${project_dir}" -maxdepth 2 -type f -name "${marker}" -print -quit 2>/dev/null)"
+    command_31="$(find "${project_dir}" -maxdepth 2 -type f -name "${marker}" -print -quit 2>/dev/null)"
     __status=$?
-    found_62="${command_29}"
-    trim__11_v0 "${found_62}"
-    ret_trim11_v0__215_12="${ret_trim11_v0}"
-    ret_marker_exists142_v0="$([ "_${ret_trim11_v0__215_12}" == "_" ]; echo $?)"
+    found_63="${command_31}"
+    trim__11_v0 "${found_63}"
+    ret_trim11_v0__228_12="${ret_trim11_v0}"
+    ret_marker_exists143_v0="$([ "_${ret_trim11_v0__228_12}" == "_" ]; echo $?)"
     return 0
 }
 
-detect_languages__143_v0() {
+detect_languages__144_v0() {
     local project_dir=$1
-    detected_61=""
-    marker_exists__142_v0 "${project_dir}" "composer.json"
-    ret_marker_exists142_v0__221_8="${ret_marker_exists142_v0}"
-    if [ "${ret_marker_exists142_v0__221_8}" != 0 ]; then
-        append_csv_unique__141_v0 "${detected_61}" "php"
-        detected_61="${ret_append_csv_unique141_v0}"
+    detected_62=""
+    marker_exists__143_v0 "${project_dir}" "composer.json"
+    ret_marker_exists143_v0__234_8="${ret_marker_exists143_v0}"
+    if [ "${ret_marker_exists143_v0__234_8}" != 0 ]; then
+        append_csv_unique__142_v0 "${detected_62}" "php"
+        detected_62="${ret_append_csv_unique142_v0}"
     fi
-    marker_exists__142_v0 "${project_dir}" "go.mod"
-    ret_marker_exists142_v0__224_8="${ret_marker_exists142_v0}"
-    if [ "${ret_marker_exists142_v0__224_8}" != 0 ]; then
-        append_csv_unique__141_v0 "${detected_61}" "go"
-        detected_61="${ret_append_csv_unique141_v0}"
+    marker_exists__143_v0 "${project_dir}" "go.mod"
+    ret_marker_exists143_v0__237_8="${ret_marker_exists143_v0}"
+    if [ "${ret_marker_exists143_v0__237_8}" != 0 ]; then
+        append_csv_unique__142_v0 "${detected_62}" "go"
+        detected_62="${ret_append_csv_unique142_v0}"
     fi
-    marker_exists__142_v0 "${project_dir}" "Cargo.toml"
-    ret_marker_exists142_v0__227_8="${ret_marker_exists142_v0}"
-    if [ "${ret_marker_exists142_v0__227_8}" != 0 ]; then
-        append_csv_unique__141_v0 "${detected_61}" "rust"
-        detected_61="${ret_append_csv_unique141_v0}"
+    marker_exists__143_v0 "${project_dir}" "Cargo.toml"
+    ret_marker_exists143_v0__240_8="${ret_marker_exists143_v0}"
+    if [ "${ret_marker_exists143_v0__240_8}" != 0 ]; then
+        append_csv_unique__142_v0 "${detected_62}" "rust"
+        detected_62="${ret_append_csv_unique142_v0}"
     fi
-    marker_exists__142_v0 "${project_dir}" "Gemfile"
-    ret_marker_exists142_v0__230_8="${ret_marker_exists142_v0}"
-    marker_exists__142_v0 "${project_dir}" "*.gemspec"
-    ret_marker_exists142_v0__230_49="${ret_marker_exists142_v0}"
-    if [ "$(( ${ret_marker_exists142_v0__230_8} || ${ret_marker_exists142_v0__230_49} ))" != 0 ]; then
-        append_csv_unique__141_v0 "${detected_61}" "ruby"
-        detected_61="${ret_append_csv_unique141_v0}"
+    marker_exists__143_v0 "${project_dir}" "Gemfile"
+    ret_marker_exists143_v0__243_8="${ret_marker_exists143_v0}"
+    marker_exists__143_v0 "${project_dir}" "*.gemspec"
+    ret_marker_exists143_v0__243_49="${ret_marker_exists143_v0}"
+    if [ "$(( ${ret_marker_exists143_v0__243_8} || ${ret_marker_exists143_v0__243_49} ))" != 0 ]; then
+        append_csv_unique__142_v0 "${detected_62}" "ruby"
+        detected_62="${ret_append_csv_unique142_v0}"
     fi
-    marker_exists__142_v0 "${project_dir}" "pom.xml"
-    ret_marker_exists142_v0__233_8="${ret_marker_exists142_v0}"
-    marker_exists__142_v0 "${project_dir}" "build.gradle"
-    ret_marker_exists142_v0__233_49="${ret_marker_exists142_v0}"
-    marker_exists__142_v0 "${project_dir}" "build.gradle.kts"
-    ret_marker_exists142_v0__233_95="${ret_marker_exists142_v0}"
-    if [ "$(( $(( ${ret_marker_exists142_v0__233_8} || ${ret_marker_exists142_v0__233_49} )) || ${ret_marker_exists142_v0__233_95} ))" != 0 ]; then
-        append_csv_unique__141_v0 "${detected_61}" "java"
-        detected_61="${ret_append_csv_unique141_v0}"
+    marker_exists__143_v0 "${project_dir}" "pom.xml"
+    ret_marker_exists143_v0__246_8="${ret_marker_exists143_v0}"
+    marker_exists__143_v0 "${project_dir}" "build.gradle"
+    ret_marker_exists143_v0__246_49="${ret_marker_exists143_v0}"
+    marker_exists__143_v0 "${project_dir}" "build.gradle.kts"
+    ret_marker_exists143_v0__246_95="${ret_marker_exists143_v0}"
+    if [ "$(( $(( ${ret_marker_exists143_v0__246_8} || ${ret_marker_exists143_v0__246_49} )) || ${ret_marker_exists143_v0__246_95} ))" != 0 ]; then
+        append_csv_unique__142_v0 "${detected_62}" "java"
+        detected_62="${ret_append_csv_unique142_v0}"
     fi
-    marker_exists__142_v0 "${project_dir}" "pyproject.toml"
-    ret_marker_exists142_v0__236_8="${ret_marker_exists142_v0}"
-    marker_exists__142_v0 "${project_dir}" "requirements.txt"
-    ret_marker_exists142_v0__236_56="${ret_marker_exists142_v0}"
-    marker_exists__142_v0 "${project_dir}" "setup.py"
-    ret_marker_exists142_v0__236_106="${ret_marker_exists142_v0}"
-    marker_exists__142_v0 "${project_dir}" "Pipfile"
-    ret_marker_exists142_v0__236_148="${ret_marker_exists142_v0}"
-    if [ "$(( $(( $(( ${ret_marker_exists142_v0__236_8} || ${ret_marker_exists142_v0__236_56} )) || ${ret_marker_exists142_v0__236_106} )) || ${ret_marker_exists142_v0__236_148} ))" != 0 ]; then
-        append_csv_unique__141_v0 "${detected_61}" "python"
-        detected_61="${ret_append_csv_unique141_v0}"
+    marker_exists__143_v0 "${project_dir}" "pyproject.toml"
+    ret_marker_exists143_v0__249_8="${ret_marker_exists143_v0}"
+    marker_exists__143_v0 "${project_dir}" "requirements.txt"
+    ret_marker_exists143_v0__249_56="${ret_marker_exists143_v0}"
+    marker_exists__143_v0 "${project_dir}" "setup.py"
+    ret_marker_exists143_v0__249_106="${ret_marker_exists143_v0}"
+    marker_exists__143_v0 "${project_dir}" "Pipfile"
+    ret_marker_exists143_v0__249_148="${ret_marker_exists143_v0}"
+    if [ "$(( $(( $(( ${ret_marker_exists143_v0__249_8} || ${ret_marker_exists143_v0__249_56} )) || ${ret_marker_exists143_v0__249_106} )) || ${ret_marker_exists143_v0__249_148} ))" != 0 ]; then
+        append_csv_unique__142_v0 "${detected_62}" "python"
+        detected_62="${ret_append_csv_unique142_v0}"
     fi
-    marker_exists__142_v0 "${project_dir}" "build.zig"
-    ret_marker_exists142_v0__239_8="${ret_marker_exists142_v0}"
-    if [ "${ret_marker_exists142_v0__239_8}" != 0 ]; then
-        append_csv_unique__141_v0 "${detected_61}" "zig"
-        detected_61="${ret_append_csv_unique141_v0}"
+    marker_exists__143_v0 "${project_dir}" "build.zig"
+    ret_marker_exists143_v0__252_8="${ret_marker_exists143_v0}"
+    if [ "${ret_marker_exists143_v0__252_8}" != 0 ]; then
+        append_csv_unique__142_v0 "${detected_62}" "zig"
+        detected_62="${ret_append_csv_unique142_v0}"
     fi
-    marker_exists__142_v0 "${project_dir}" "rebar.config"
-    ret_marker_exists142_v0__242_8="${ret_marker_exists142_v0}"
-    marker_exists__142_v0 "${project_dir}" "erlang.mk"
-    ret_marker_exists142_v0__242_54="${ret_marker_exists142_v0}"
-    if [ "$(( ${ret_marker_exists142_v0__242_8} || ${ret_marker_exists142_v0__242_54} ))" != 0 ]; then
-        append_csv_unique__141_v0 "${detected_61}" "erlang"
-        detected_61="${ret_append_csv_unique141_v0}"
+    marker_exists__143_v0 "${project_dir}" "rebar.config"
+    ret_marker_exists143_v0__255_8="${ret_marker_exists143_v0}"
+    marker_exists__143_v0 "${project_dir}" "erlang.mk"
+    ret_marker_exists143_v0__255_54="${ret_marker_exists143_v0}"
+    if [ "$(( ${ret_marker_exists143_v0__255_8} || ${ret_marker_exists143_v0__255_54} ))" != 0 ]; then
+        append_csv_unique__142_v0 "${detected_62}" "erlang"
+        detected_62="${ret_append_csv_unique142_v0}"
     fi
-    marker_exists__142_v0 "${project_dir}" "mix.exs"
-    ret_marker_exists142_v0__245_8="${ret_marker_exists142_v0}"
-    if [ "${ret_marker_exists142_v0__245_8}" != 0 ]; then
-        append_csv_unique__141_v0 "${detected_61}" "elixir"
-        detected_61="${ret_append_csv_unique141_v0}"
+    marker_exists__143_v0 "${project_dir}" "mix.exs"
+    ret_marker_exists143_v0__258_8="${ret_marker_exists143_v0}"
+    if [ "${ret_marker_exists143_v0__258_8}" != 0 ]; then
+        append_csv_unique__142_v0 "${detected_62}" "elixir"
+        detected_62="${ret_append_csv_unique142_v0}"
     fi
-    ret_detect_languages143_v0="${detected_61}"
+    ret_detect_languages144_v0="${detected_62}"
     return 0
 }
 
-select_languages__144_v0() {
-    command_30="$(pwd)"
+select_languages__145_v0() {
+    command_32="$(pwd)"
     __status=$?
-    pwd_60="${command_30}"
-    file_exists__37_v0 "${pwd_60}/.mise.toml"
-    ret_file_exists37_v0__255_8="${ret_file_exists37_v0}"
-    file_exists__37_v0 "${pwd_60}/mise.toml"
-    ret_file_exists37_v0__255_43="${ret_file_exists37_v0}"
-    dir_exists__36_v0 "${pwd_60}/.mise"
-    ret_dir_exists36_v0__255_77="${ret_dir_exists36_v0}"
-    if [ "$(( $(( ${ret_file_exists37_v0__255_8} || ${ret_file_exists37_v0__255_43} )) || ${ret_dir_exists36_v0__255_77} ))" != 0 ]; then
-        ret_select_languages144_v0="__mise_toml__"
+    pwd_61="${command_32}"
+    file_exists__37_v0 "${pwd_61}/.mise.toml"
+    ret_file_exists37_v0__268_8="${ret_file_exists37_v0}"
+    file_exists__37_v0 "${pwd_61}/mise.toml"
+    ret_file_exists37_v0__268_43="${ret_file_exists37_v0}"
+    dir_exists__36_v0 "${pwd_61}/.mise"
+    ret_dir_exists36_v0__268_77="${ret_dir_exists36_v0}"
+    if [ "$(( $(( ${ret_file_exists37_v0__268_8} || ${ret_file_exists37_v0__268_43} )) || ${ret_dir_exists36_v0__268_77} ))" != 0 ]; then
+        ret_select_languages145_v0="__mise_toml__"
         return 0
     fi
-    detect_languages__143_v0 "${pwd_60}"
-    detected_66="${ret_detect_languages143_v0}"
-    if [ "$([ "_${detected_66}" == "_" ]; echo $?)" != 0 ]; then
-        echo "Auto-detected languages from project files: ${detected_66}"
-        ret_select_languages144_v0="${detected_66}"
+    detect_languages__144_v0 "${pwd_61}"
+    detected_67="${ret_detect_languages144_v0}"
+    if [ "$([ "_${detected_67}" == "_" ]; echo $?)" != 0 ]; then
+        echo "Auto-detected languages from project files: ${detected_67}"
+        ret_select_languages145_v0="${detected_67}"
         return 0
     fi
     echo ""
@@ -561,91 +579,91 @@ select_languages__144_v0() {
     echo "  php  go  rust  ruby  java  python  zig  erlang  elixir"
     echo ""
     input_prompt__103_v0 "Languages: "
-    selection_67="${ret_input_prompt103_v0}"
-    ret_select_languages144_v0="${selection_67}"
+    selection_68="${ret_input_prompt103_v0}"
+    ret_select_languages145_v0="${selection_68}"
     return 0
 }
 
-env_flags__145_v0() {
-    flags_90=""
-    vars_91=("OPENAI_API_KEY" "OPENAI_BASE_URL" "OPENAI_ORG_ID" "ANTHROPIC_API_KEY" "ANTHROPIC_BASE_URL" "GOOGLE_API_KEY" "GEMINI_API_KEY" "GOOGLE_CLOUD_PROJECT" "GITHUB_TOKEN" "GH_TOKEN" "GROQ_API_KEY" "MISTRAL_API_KEY" "DEEPSEEK_API_KEY" "OPENROUTER_API_KEY" "AWS_ACCESS_KEY_ID" "AWS_SECRET_ACCESS_KEY" "AWS_SESSION_TOKEN" "AWS_REGION")
-    for var_92 in "${vars_91[@]}"; do
-        env_var_get__100_v0 "${var_92}"
+env_flags__146_v0() {
+    flags_91=""
+    vars_92=("OPENAI_API_KEY" "OPENAI_BASE_URL" "OPENAI_ORG_ID" "ANTHROPIC_API_KEY" "ANTHROPIC_BASE_URL" "GOOGLE_API_KEY" "GEMINI_API_KEY" "GOOGLE_CLOUD_PROJECT" "GITHUB_TOKEN" "GH_TOKEN" "GROQ_API_KEY" "MISTRAL_API_KEY" "DEEPSEEK_API_KEY" "OPENROUTER_API_KEY" "AWS_ACCESS_KEY_ID" "AWS_SECRET_ACCESS_KEY" "AWS_SESSION_TOKEN" "AWS_REGION")
+    for var_93 in "${vars_92[@]}"; do
+        env_var_get__100_v0 "${var_93}"
         __status=$?
         if [ "${__status}" != 0 ]; then
             continue
         fi
-        val_93="${ret_env_var_get100_v0}"
-        flags_90+=" -e ${var_92}=${val_93}"
+        val_94="${ret_env_var_get100_v0}"
+        flags_91+=" -e ${var_93}=${val_94}"
     done
-    command_32="$(pwd)"
+    command_34="$(pwd)"
     __status=$?
-    pwd_94="${command_32}"
-    file_exists__37_v0 "${pwd_94}/.env.sandbox"
-    ret_file_exists37_v0__293_8="${ret_file_exists37_v0}"
-    if [ "${ret_file_exists37_v0__293_8}" != 0 ]; then
-        command_33="$(cat "${pwd_94}/.env.sandbox")"
+    pwd_95="${command_34}"
+    file_exists__37_v0 "${pwd_95}/.env.sandbox"
+    ret_file_exists37_v0__306_8="${ret_file_exists37_v0}"
+    if [ "${ret_file_exists37_v0__306_8}" != 0 ]; then
+        command_35="$(cat "${pwd_95}/.env.sandbox")"
         __status=$?
-        content_95="${command_33}"
-        split__5_v0 "${content_95}" "
+        content_96="${command_35}"
+        split__5_v0 "${content_96}" "
 "
-        lines_96=("${ret_split5_v0[@]}")
-        for line_97 in "${lines_96[@]}"; do
-            trim__11_v0 "${line_97}"
-            trimmed_98="${ret_trim11_v0}"
-            starts_with__23_v0 "${trimmed_98}" "#"
-            ret_starts_with23_v0__298_33="${ret_starts_with23_v0}"
-            if [ "$(( $([ "_${trimmed_98}" != "_" ]; echo $?) || ${ret_starts_with23_v0__298_33} ))" != 0 ]; then
+        lines_97=("${ret_split5_v0[@]}")
+        for line_98 in "${lines_97[@]}"; do
+            trim__11_v0 "${line_98}"
+            trimmed_99="${ret_trim11_v0}"
+            starts_with__23_v0 "${trimmed_99}" "#"
+            ret_starts_with23_v0__311_33="${ret_starts_with23_v0}"
+            if [ "$(( $([ "_${trimmed_99}" != "_" ]; echo $?) || ${ret_starts_with23_v0__311_33} ))" != 0 ]; then
                 continue
             fi
-            flags_90+=" -e ${trimmed_98}"
+            flags_91+=" -e ${trimmed_99}"
         done
     fi
-    ret_env_flags145_v0="${flags_90}"
+    ret_env_flags146_v0="${flags_91}"
     return 0
 }
 
-volume_flags__146_v0() {
+volume_flags__147_v0() {
     local source_dir=$1
     local folder=$2
-    flags_84=""
-    command_34="$(printenv HOME)"
+    flags_85=""
+    command_36="$(printenv HOME)"
     __status=$?
-    home_85="${command_34}"
-    flags_84+=" -v ${source_dir}:/workspace/${folder}"
-    config_dirs_86=(".codex" ".claude" ".gemini" ".opencode" ".code" ".copilot" ".agents")
-    for dir_87 in "${config_dirs_86[@]}"; do
-        dir_exists__36_v0 "${home_85}/${dir_87}"
-        ret_dir_exists36_v0__316_12="${ret_dir_exists36_v0}"
-        if [ "${ret_dir_exists36_v0__316_12}" != 0 ]; then
-            flags_84+=" -v ${home_85}/${dir_87}:/workspace/${dir_87}"
+    home_86="${command_36}"
+    flags_85+=" -v ${source_dir}:/workspace/${folder}"
+    config_dirs_87=(".codex" ".claude" ".gemini" ".opencode" ".code" ".copilot" ".agents")
+    for dir_88 in "${config_dirs_87[@]}"; do
+        dir_exists__36_v0 "${home_86}/${dir_88}"
+        ret_dir_exists36_v0__329_12="${ret_dir_exists36_v0}"
+        if [ "${ret_dir_exists36_v0__329_12}" != 0 ]; then
+            flags_85+=" -v ${home_86}/${dir_88}:/workspace/${dir_88}"
         fi
     done
-    config_files_88=(".claude.json")
-    for file_89 in "${config_files_88[@]}"; do
-        file_exists__37_v0 "${home_85}/${file_89}"
-        ret_file_exists37_v0__323_12="${ret_file_exists37_v0}"
-        if [ "${ret_file_exists37_v0__323_12}" != 0 ]; then
-            flags_84+=" -v ${home_85}/${file_89}:/workspace/${file_89}"
+    config_files_89=(".claude.json")
+    for file_90 in "${config_files_89[@]}"; do
+        file_exists__37_v0 "${home_86}/${file_90}"
+        ret_file_exists37_v0__336_12="${ret_file_exists37_v0}"
+        if [ "${ret_file_exists37_v0__336_12}" != 0 ]; then
+            flags_85+=" -v ${home_86}/${file_90}:/workspace/${file_90}"
         fi
     done
-    dir_exists__36_v0 "${home_85}/.ssh"
-    ret_dir_exists36_v0__328_8="${ret_dir_exists36_v0}"
-    if [ "${ret_dir_exists36_v0__328_8}" != 0 ]; then
-        flags_84+=" -v ${home_85}/.ssh:/workspace/.ssh:ro"
+    dir_exists__36_v0 "${home_86}/.ssh"
+    ret_dir_exists36_v0__341_8="${ret_dir_exists36_v0}"
+    if [ "${ret_dir_exists36_v0__341_8}" != 0 ]; then
+        flags_85+=" -v ${home_86}/.ssh:/workspace/.ssh:ro"
     fi
-    file_exists__37_v0 "${home_85}/.gitconfig"
-    ret_file_exists37_v0__332_8="${ret_file_exists37_v0}"
-    if [ "${ret_file_exists37_v0__332_8}" != 0 ]; then
-        flags_84+=" -v ${home_85}/.gitconfig:/workspace/.gitconfig:ro"
+    file_exists__37_v0 "${home_86}/.gitconfig"
+    ret_file_exists37_v0__345_8="${ret_file_exists37_v0}"
+    if [ "${ret_file_exists37_v0__345_8}" != 0 ]; then
+        flags_85+=" -v ${home_86}/.gitconfig:/workspace/.gitconfig:ro"
     fi
-    flags_84+=" -v code-sandbox-bun-cache:/home/code/.bun"
-    flags_84+=" -v code-sandbox-mise-data:/workspace/.local/share/mise"
-    ret_volume_flags146_v0="${flags_84}"
+    flags_85+=" -v code-sandbox-bun-cache:/home/code/.bun"
+    flags_85+=" -v code-sandbox-mise-data:/workspace/.local/share/mise"
+    ret_volume_flags147_v0="${flags_85}"
     return 0
 }
 
-show_menu__147_v0() {
+show_menu__148_v0() {
     echo ""
     echo "Select an agent to launch:"
     echo "  1) code      - Every Code (multi-model agent)"
@@ -657,109 +675,109 @@ show_menu__147_v0() {
     echo "  7) shell     - Bash shell"
     echo ""
     input_prompt__103_v0 "Choice [1-7]: "
-    choice_58="${ret_input_prompt103_v0}"
-    if [ "$([ "_${choice_58}" != "_1" ]; echo $?)" != 0 ]; then
-        ret_show_menu147_v0="code"
+    choice_59="${ret_input_prompt103_v0}"
+    if [ "$([ "_${choice_59}" != "_1" ]; echo $?)" != 0 ]; then
+        ret_show_menu148_v0="code"
         return 0
     fi
-    if [ "$([ "_${choice_58}" != "_2" ]; echo $?)" != 0 ]; then
-        ret_show_menu147_v0="claude"
+    if [ "$([ "_${choice_59}" != "_2" ]; echo $?)" != 0 ]; then
+        ret_show_menu148_v0="claude"
         return 0
     fi
-    if [ "$([ "_${choice_58}" != "_3" ]; echo $?)" != 0 ]; then
-        ret_show_menu147_v0="codex"
+    if [ "$([ "_${choice_59}" != "_3" ]; echo $?)" != 0 ]; then
+        ret_show_menu148_v0="codex"
         return 0
     fi
-    if [ "$([ "_${choice_58}" != "_4" ]; echo $?)" != 0 ]; then
-        ret_show_menu147_v0="gemini"
+    if [ "$([ "_${choice_59}" != "_4" ]; echo $?)" != 0 ]; then
+        ret_show_menu148_v0="gemini"
         return 0
     fi
-    if [ "$([ "_${choice_58}" != "_5" ]; echo $?)" != 0 ]; then
-        ret_show_menu147_v0="opencode"
+    if [ "$([ "_${choice_59}" != "_5" ]; echo $?)" != 0 ]; then
+        ret_show_menu148_v0="opencode"
         return 0
     fi
-    if [ "$([ "_${choice_58}" != "_6" ]; echo $?)" != 0 ]; then
-        ret_show_menu147_v0="copilot"
+    if [ "$([ "_${choice_59}" != "_6" ]; echo $?)" != 0 ]; then
+        ret_show_menu148_v0="copilot"
         return 0
     fi
-    if [ "$([ "_${choice_58}" != "_7" ]; echo $?)" != 0 ]; then
-        ret_show_menu147_v0="bash"
+    if [ "$([ "_${choice_59}" != "_7" ]; echo $?)" != 0 ]; then
+        ret_show_menu148_v0="bash"
         return 0
     fi
     echo "Invalid choice."
     exit 1
 }
 
-collect_args__148_v0() {
+collect_args__149_v0() {
     local args=("${!1}")
     local start=$2
-    result_19=""
-    j_20="${start}"
+    result_18=""
+    j_19="${start}"
     while :
     do
-        __length_37=("${args[@]}")
-        if [ "$(( ${j_20} >= ${#__length_37[@]} ))" != 0 ]; then
+        __length_39=("${args[@]}")
+        if [ "$(( ${j_19} >= ${#__length_39[@]} ))" != 0 ]; then
             break
         fi
-        if [ "$([ "_${result_19}" == "_" ]; echo $?)" != 0 ]; then
-            result_19+=" "
+        if [ "$([ "_${result_18}" == "_" ]; echo $?)" != 0 ]; then
+            result_18+=" "
         fi
-        result_19+="${args[${j_20}]}"
-        j_20="$(( ${j_20} + 1 ))"
+        result_18+="${args[${j_19}]}"
+        j_19="$(( ${j_19} + 1 ))"
     done
-    ret_collect_args148_v0="${result_19}"
+    ret_collect_args149_v0="${result_18}"
     return 0
 }
 
-resolve_cmd__149_v0() {
+resolve_cmd__150_v0() {
     local shell_mode=$1
     local explicit_cmd=$2
     local pass_args=$3
     if [ "${shell_mode}" != 0 ]; then
-        ret_resolve_cmd149_v0="bash"
+        ret_resolve_cmd150_v0="bash"
         return 0
     fi
     if [ "$(( ${explicit_cmd} && $([ "_${pass_args}" == "_" ]; echo $?) ))" != 0 ]; then
-        ret_resolve_cmd149_v0="${pass_args}"
+        ret_resolve_cmd150_v0="${pass_args}"
         return 0
     fi
-    show_menu__147_v0 
-    ret_resolve_cmd149_v0="${ret_show_menu147_v0}"
+    show_menu__148_v0 
+    ret_resolve_cmd150_v0="${ret_show_menu148_v0}"
     return 0
 }
 
-get_container_state__150_v0() {
+get_container_state__151_v0() {
     local cname=$1
-    command_38="$(docker inspect "${cname}" 2>/dev/null)"
+    command_40="$(docker inspect "${cname}" 2>/dev/null)"
     __status=$?
     if [ "${__status}" != 0 ]; then
-        ret_get_container_state150_v0="none"
+        ret_get_container_state151_v0="none"
         return 0
     fi
-    json_55="${command_38}"
-    command_39="$(echo "${json_55}" | jq -r ".[0].State.Status")"
+    json_56="${command_40}"
+    command_41="$(echo "${json_56}" | jq -r ".[0].State.Status")"
     __status=$?
-    state_56="${command_39}"
-    trim__11_v0 "${state_56}"
-    ret_get_container_state150_v0="${ret_trim11_v0}"
+    state_57="${command_41}"
+    trim__11_v0 "${state_57}"
+    ret_get_container_state151_v0="${ret_trim11_v0}"
     return 0
 }
 
-sandbox_setup__151_v0() {
+sandbox_setup__152_v0() {
     local pwd=$1
     local folder=$2
     git -C "${pwd}" rev-parse --is-inside-work-tree >/dev/null 2>&1
     __status=$?
     if [ "${__status}" != 0 ]; then
-        ret_sandbox_setup151_v0=""
+        ret_sandbox_setup152_v0=""
         return 0
     fi
-    command_40="$(date +%Y%m%d-%H%M%S)"
+    command_42="$(date +%Y%m%d-%H%M%S)"
     __status=$?
-    timestamp_75="${command_40}"
-    sandbox_dir_76="/tmp/code-sandbox/${folder}-${timestamp_75}"
-    rpad__29_v0 "${sandbox_dir_76}" " " 55
-    padded_77="${ret_rpad29_v0}"
+    timestamp_76="${command_42}"
+    sandbox_dir_77="/tmp/code-sandbox/${folder}-${timestamp_76}"
+    rpad__29_v0 "${sandbox_dir_77}" " " 55
+    padded_78="${ret_rpad29_v0}"
     echo ""
     echo "┌─────────────────────────────────────────────────────────────────┐"
     echo "│  🛡️  Safe Mode: isolated sandbox workspace                       │"
@@ -768,52 +786,52 @@ sandbox_setup__151_v0() {
     echo "│  of your project — your workspace files stay untouched until    │"
     echo "│  you decide what to do when the session ends.                   │"
     echo "│                                                                  │"
-    echo "│  Sandbox : ${padded_77}│"
+    echo "│  Sandbox : ${padded_78}│"
     echo "│  On exit : you will be asked what to do with any changes.       │"
     echo "└─────────────────────────────────────────────────────────────────┘"
     echo ""
     mkdir -p /tmp/code-sandbox
     __status=$?
-    git clone --quiet "${pwd}" "${sandbox_dir_76}"
+    git clone --quiet "${pwd}" "${sandbox_dir_77}"
     __status=$?
     if [ "${__status}" != 0 ]; then
         echo "Warning: git clone failed — using direct workspace."
         echo ""
-        ret_sandbox_setup151_v0=""
+        ret_sandbox_setup152_v0=""
         return 0
     fi
-    rsync -a --exclude=.git "${pwd}/" "${sandbox_dir_76}/"
+    rsync -a --exclude=.git "${pwd}/" "${sandbox_dir_77}/"
     __status=$?
-    git -C "${sandbox_dir_76}" remote set-url origin "${pwd}" >/dev/null 2>&1
+    git -C "${sandbox_dir_77}" remote set-url origin "${pwd}" >/dev/null 2>&1
     __status=$?
     # Commit any pre-existing dirty state as a baseline so the agent's work
     # lands in a separate, clean commit — useful for option C (branch push).
-    has_diff_78=0
-    git -C "${sandbox_dir_76}" diff --quiet >/dev/null 2>&1
+    has_diff_79=0
+    git -C "${sandbox_dir_77}" diff --quiet >/dev/null 2>&1
     __status=$?
     if [ "${__status}" != 0 ]; then
-        has_diff_78=1
+        has_diff_79=1
     fi
-    has_cached_79=0
-    git -C "${sandbox_dir_76}" diff --cached --quiet >/dev/null 2>&1
+    has_cached_80=0
+    git -C "${sandbox_dir_77}" diff --cached --quiet >/dev/null 2>&1
     __status=$?
     if [ "${__status}" != 0 ]; then
-        has_cached_79=1
+        has_cached_80=1
     fi
-    command_41="$(git -C "${sandbox_dir_76}" ls-files --others --exclude-standard)"
+    command_43="$(git -C "${sandbox_dir_77}" ls-files --others --exclude-standard)"
     __status=$?
-    untracked_80="${command_41}"
-    if [ "$(( $(( ${has_diff_78} || ${has_cached_79} )) || $([ "_${untracked_80}" == "_" ]; echo $?) ))" != 0 ]; then
-        git -C "${sandbox_dir_76}" add -A
+    untracked_81="${command_43}"
+    if [ "$(( $(( ${has_diff_79} || ${has_cached_80} )) || $([ "_${untracked_81}" == "_" ]; echo $?) ))" != 0 ]; then
+        git -C "${sandbox_dir_77}" add -A
         __status=$?
-        git -C "${sandbox_dir_76}" commit -m "pre-sandbox: uncommitted host changes" --quiet >/dev/null 2>&1
+        git -C "${sandbox_dir_77}" commit -m "pre-sandbox: uncommitted host changes" --quiet >/dev/null 2>&1
         __status=$?
     fi
-    ret_sandbox_setup151_v0="${sandbox_dir_76}"
+    ret_sandbox_setup152_v0="${sandbox_dir_77}"
     return 0
 }
 
-sandbox_exit__152_v0() {
+sandbox_exit__153_v0() {
     local sandbox_dir=$1
     local project_dir=$2
     echo ""
@@ -826,26 +844,26 @@ sandbox_exit__152_v0() {
     echo "│  D) Discard — leave workspace exactly as it was                 │"
     echo "└─────────────────────────────────────────────────────────────────┘"
     echo ""
-    command_42="$(if [ -t 0 ]; then read -r -p "Choice [A/B/C/D]: " _c </dev/tty 2>/dev/tty || _c="D"; else _c="D"; fi; echo "$_c")"
+    command_44="$(if [ -t 0 ]; then read -r -p "Choice [A/B/C/D]: " _c </dev/tty 2>/dev/tty || _c="D"; else _c="D"; fi; echo "$_c")"
     __status=$?
-    choice_101="${command_42}"
-    uppercase__13_v0 "${choice_101}"
-    choice_upper_102="${ret_uppercase13_v0}"
-    if [ "$([ "_${choice_upper_102}" != "_A" ]; echo $?)" != 0 ]; then
+    choice_102="${command_44}"
+    uppercase__13_v0 "${choice_102}"
+    choice_upper_103="${ret_uppercase13_v0}"
+    if [ "$([ "_${choice_upper_103}" != "_A" ]; echo $?)" != 0 ]; then
         echo "→ Copying sandbox changes to workspace (additive)..."
         rsync -a --exclude=.git "${sandbox_dir}/" "${project_dir}/"
         __status=$?
         echo "✓ Done."
-    elif [ "$([ "_${choice_upper_102}" != "_B" ]; echo $?)" != 0 ]; then
+    elif [ "$([ "_${choice_upper_103}" != "_B" ]; echo $?)" != 0 ]; then
         echo "→ Mirroring sandbox to workspace (adds + deletes)..."
         rsync -a --delete --exclude=.git "${sandbox_dir}/" "${project_dir}/"
         __status=$?
         echo "✓ Done."
-    elif [ "$([ "_${choice_upper_102}" != "_C" ]; echo $?)" != 0 ]; then
-        command_43="$(echo "sandbox/$(date +%Y%m%d-%H%M%S)")"
+    elif [ "$([ "_${choice_upper_103}" != "_C" ]; echo $?)" != 0 ]; then
+        command_45="$(echo "sandbox/$(date +%Y%m%d-%H%M%S)")"
         __status=$?
-        branch_103="${command_43}"
-        echo "→ Creating branch ${branch_103}..."
+        branch_104="${command_45}"
+        echo "→ Creating branch ${branch_104}..."
         git -C "${sandbox_dir}" add -A
         __status=$?
         git -C "${sandbox_dir}" diff --cached --quiet >/dev/null 2>&1
@@ -854,20 +872,20 @@ sandbox_exit__152_v0() {
             git -C "${sandbox_dir}" commit -m "sandbox: agent changes" --quiet
             __status=$?
         fi
-        push_failed_104=0
-        git -C "${sandbox_dir}" push origin "HEAD:refs/heads/${branch_103}" --quiet
+        push_failed_105=0
+        git -C "${sandbox_dir}" push origin "HEAD:refs/heads/${branch_104}" --quiet
         __status=$?
         if [ "${__status}" != 0 ]; then
-            push_failed_104=1
+            push_failed_105=1
         fi
-        if [ "${push_failed_104}" != 0 ]; then
+        if [ "${push_failed_105}" != 0 ]; then
             echo "✗ Branch push failed — falling back to additive rsync..."
             rsync -a --exclude=.git "${sandbox_dir}/" "${project_dir}/"
             __status=$?
             echo "✓ Changes copied to workspace instead."
         else
-            echo "✓ Branch '${branch_103}' created in workspace."
-            echo "  Switch to it with: git checkout ${branch_103}"
+            echo "✓ Branch '${branch_104}' created in workspace."
+            echo "  Switch to it with: git checkout ${branch_104}"
         fi
     else
         echo "→ Workspace unchanged."
@@ -876,173 +894,173 @@ sandbox_exit__152_v0() {
     __status=$?
 }
 
-declare -r args_7=("$0" "$@")
-do_pull_8=0
-do_build_9=0
-do_update_10=0
-shell_mode_11=0
-help_mode_12=0
-languages_13="__prompt__"
-pass_args_14=""
-explicit_cmd_15=0
+declare -r args_6=("$0" "$@")
+do_pull_7=0
+do_build_8=0
+do_update_9=0
+shell_mode_10=0
+help_mode_11=0
+languages_12="__prompt__"
+pass_args_13=""
+explicit_cmd_14=0
 # Amber includes the script path in args[0], so parse user args from index 1.
-i_16=1
+i_15=1
 while :
 do
-    __length_45=("${args_7[@]}")
-    if [ "$(( ${i_16} >= ${#__length_45[@]} ))" != 0 ]; then
+    __length_47=("${args_6[@]}")
+    if [ "$(( ${i_15} >= ${#__length_47[@]} ))" != 0 ]; then
         break
     fi
-    arg_17="${args_7[${i_16}]}"
-    starts_with__23_v0 "${arg_17}" "--languages="
-    ret_starts_with23_v0__543_13="${ret_starts_with23_v0}"
-    starts_with__23_v0 "${arg_17}" "-"
-    ret_starts_with23_v0__551_13="${ret_starts_with23_v0}"
-    if [ "$([ "_${arg_17}" != "_--pull" ]; echo $?)" != 0 ]; then
-        do_pull_8=1
-    elif [ "$([ "_${arg_17}" != "_--build" ]; echo $?)" != 0 ]; then
-        do_build_9=1
-    elif [ "$([ "_${arg_17}" != "_--update" ]; echo $?)" != 0 ]; then
-        do_update_10=1
-    elif [ "$([ "_${arg_17}" != "_--shell" ]; echo $?)" != 0 ]; then
-        shell_mode_11=1
-    elif [ "$(( $([ "_${arg_17}" != "_--help" ]; echo $?) || $([ "_${arg_17}" != "_-h" ]; echo $?) ))" != 0 ]; then
-        help_mode_12=1
-    elif [ "$([ "_${arg_17}" != "_--languages" ]; echo $?)" != 0 ]; then
-        __length_46=("${args_7[@]}")
-        if [ "$(( $(( ${i_16} + 1 )) >= ${#__length_46[@]} ))" != 0 ]; then
+    arg_16="${args_6[${i_15}]}"
+    starts_with__23_v0 "${arg_16}" "--languages="
+    ret_starts_with23_v0__556_13="${ret_starts_with23_v0}"
+    starts_with__23_v0 "${arg_16}" "-"
+    ret_starts_with23_v0__564_13="${ret_starts_with23_v0}"
+    if [ "$([ "_${arg_16}" != "_--pull" ]; echo $?)" != 0 ]; then
+        do_pull_7=1
+    elif [ "$([ "_${arg_16}" != "_--build" ]; echo $?)" != 0 ]; then
+        do_build_8=1
+    elif [ "$([ "_${arg_16}" != "_--update" ]; echo $?)" != 0 ]; then
+        do_update_9=1
+    elif [ "$([ "_${arg_16}" != "_--shell" ]; echo $?)" != 0 ]; then
+        shell_mode_10=1
+    elif [ "$(( $([ "_${arg_16}" != "_--help" ]; echo $?) || $([ "_${arg_16}" != "_-h" ]; echo $?) ))" != 0 ]; then
+        help_mode_11=1
+    elif [ "$([ "_${arg_16}" != "_--languages" ]; echo $?)" != 0 ]; then
+        __length_48=("${args_6[@]}")
+        if [ "$(( $(( ${i_15} + 1 )) >= ${#__length_48[@]} ))" != 0 ]; then
             echo "Error: --languages requires a value."
             echo "Use --help for usage."
             exit 1
         fi
-        i_16="$(( ${i_16} + 1 ))"
-        languages_13="${args_7[${i_16}]}"
-    elif [ "${ret_starts_with23_v0__543_13}" != 0 ]; then
-        command_47="$(echo "${arg_17}" | cut -d= -f2-)"
+        i_15="$(( ${i_15} + 1 ))"
+        languages_12="${args_6[${i_15}]}"
+    elif [ "${ret_starts_with23_v0__556_13}" != 0 ]; then
+        command_49="$(echo "${arg_16}" | cut -d= -f2-)"
         __status=$?
-        languages_13="${command_47}"
-    elif [ "$([ "_${arg_17}" != "_--" ]; echo $?)" != 0 ]; then
-        collect_args__148_v0 args_7[@] "$(( ${i_16} + 1 ))"
-        pass_args_14="${ret_collect_args148_v0}"
-        explicit_cmd_15=1
+        languages_12="${command_49}"
+    elif [ "$([ "_${arg_16}" != "_--" ]; echo $?)" != 0 ]; then
+        collect_args__149_v0 args_6[@] "$(( ${i_15} + 1 ))"
+        pass_args_13="${ret_collect_args149_v0}"
+        explicit_cmd_14=1
         break
-    elif [ "${ret_starts_with23_v0__551_13}" != 0 ]; then
-        echo "Error: Unknown option: ${arg_17}"
+    elif [ "${ret_starts_with23_v0__564_13}" != 0 ]; then
+        echo "Error: Unknown option: ${arg_16}"
         echo "Use --help for usage."
         exit 1
     else
-        collect_args__148_v0 args_7[@] "${i_16}"
-        pass_args_14="${ret_collect_args148_v0}"
-        explicit_cmd_15=1
+        collect_args__149_v0 args_6[@] "${i_15}"
+        pass_args_13="${ret_collect_args149_v0}"
+        explicit_cmd_14=1
         break
     fi
-    i_16="$(( ${i_16} + 1 ))"
+    i_15="$(( ${i_15} + 1 ))"
 done
-if [ "${help_mode_12}" != 0 ]; then
+if [ "${help_mode_11}" != 0 ]; then
     show_help__128_v0 
     exit 0
 fi
 # Get the image
-if [ "${do_build_9}" != 0 ]; then
-    build_image__137_v0 
+if [ "${do_build_8}" != 0 ]; then
+    build_image__138_v0 
     __status=$?
     if [ "${__status}" != 0 ]; then
         exit "${__status}"
     fi
-elif [ "${do_pull_8}" != 0 ]; then
-    pull_image__136_v0 
+elif [ "${do_pull_7}" != 0 ]; then
+    pull_image__137_v0 
     __status=$?
     if [ "${__status}" != 0 ]; then
         exit "${__status}"
     fi
 else
-    ensure_image__138_v0 "${do_update_10}"
+    ensure_image__139_v0 "${do_update_9}"
     __status=$?
     if [ "${__status}" != 0 ]; then
         exit "${__status}"
     fi
 fi
-container_name__139_v0 
-cname_54="${ret_container_name139_v0}"
-get_container_state__150_v0 "${cname_54}"
-state_57="${ret_get_container_state150_v0}"
-if [ "$([ "_${state_57}" != "_running" ]; echo $?)" != 0 ]; then
-    echo "Attaching to running container ${cname_54} ..."
-    resolve_cmd__149_v0 "${shell_mode_11}" "${explicit_cmd_15}" "${pass_args_14}"
-    cmd_59="${ret_resolve_cmd149_v0}"
-    exec docker exec -it -e TERM=xterm-256color -e COLORTERM=truecolor -e FORCE_COLOR=1 "${cname_54}" gosu code ${cmd_59}
+container_name__140_v0 
+cname_55="${ret_container_name140_v0}"
+get_container_state__151_v0 "${cname_55}"
+state_58="${ret_get_container_state151_v0}"
+if [ "$([ "_${state_58}" != "_running" ]; echo $?)" != 0 ]; then
+    echo "Attaching to running container ${cname_55} ..."
+    resolve_cmd__150_v0 "${shell_mode_10}" "${explicit_cmd_14}" "${pass_args_13}"
+    cmd_60="${ret_resolve_cmd150_v0}"
+    exec docker exec -it -e TERM=xterm-256color -e COLORTERM=truecolor -e FORCE_COLOR=1 "${cname_55}" gosu code ${cmd_60}
     __status=$?
     if [ "${__status}" != 0 ]; then
         exit "${__status}"
     fi
 fi
-if [ "$([ "_${state_57}" == "_none" ]; echo $?)" != 0 ]; then
-    docker rm "${cname_54}" >/dev/null 2>&1
+if [ "$([ "_${state_58}" == "_none" ]; echo $?)" != 0 ]; then
+    docker rm "${cname_55}" >/dev/null 2>&1
     __status=$?
 fi
 # Language selection (only for new containers)
-if [ "$([ "_${languages_13}" != "___prompt__" ]; echo $?)" != 0 ]; then
-    select_languages__144_v0 
-    languages_13="${ret_select_languages144_v0}"
+if [ "$([ "_${languages_12}" != "___prompt__" ]; echo $?)" != 0 ]; then
+    select_languages__145_v0 
+    languages_12="${ret_select_languages145_v0}"
 fi
-resolve_cmd__149_v0 "${shell_mode_11}" "${explicit_cmd_15}" "${pass_args_14}"
-cmd_68="${ret_resolve_cmd149_v0}"
+resolve_cmd__150_v0 "${shell_mode_10}" "${explicit_cmd_14}" "${pass_args_13}"
+cmd_69="${ret_resolve_cmd150_v0}"
 # Build docker run command
-command_48="$(id -u)"
+command_50="$(id -u)"
 __status=$?
-host_uid_69="${command_48}"
-command_49="$(id -g)"
+host_uid_70="${command_50}"
+command_51="$(id -g)"
 __status=$?
-host_gid_70="${command_49}"
-term_71="xterm-256color"
-command_50="$(pwd -P)"
+host_gid_71="${command_51}"
+term_72="xterm-256color"
+command_52="$(pwd -P)"
 __status=$?
-pwd_72="${command_50}"
-command_51="$(basename "${pwd_72}")"
+pwd_73="${command_52}"
+command_53="$(basename "${pwd_73}")"
 __status=$?
-folder_73="${command_51}"
-project_dir_74="/workspace/${folder_73}"
+folder_74="${command_53}"
+project_dir_75="/workspace/${folder_74}"
 # Set up sandbox on the host before starting the container.
 # The sandbox dir is mounted in place of the real project, so even
 # a destructive agent command cannot touch the original workspace.
-sandbox_setup__151_v0 "${pwd_72}" "${folder_73}"
-sandbox_dir_81="${ret_sandbox_setup151_v0}"
-source_dir_82="${pwd_72}"
-if [ "$([ "_${sandbox_dir_81}" == "_" ]; echo $?)" != 0 ]; then
-    source_dir_82="${sandbox_dir_81}"
+sandbox_setup__152_v0 "${pwd_73}" "${folder_74}"
+sandbox_dir_82="${ret_sandbox_setup152_v0}"
+source_dir_83="${pwd_73}"
+if [ "$([ "_${sandbox_dir_82}" == "_" ]; echo $?)" != 0 ]; then
+    source_dir_83="${sandbox_dir_82}"
 fi
-run_cmd_83="docker run -it --rm"
-run_cmd_83+=" --name ${cname_54}"
-run_cmd_83+=" --hostname code-sandbox"
-run_cmd_83+=" -w ${project_dir_74}"
-run_cmd_83+=" --network bridge"
-run_cmd_83+=" --tmpfs /tmp:exec,size=2g"
-run_cmd_83+=" --security-opt=no-new-privileges"
-run_cmd_83+=" --pids-limit=500"
-run_cmd_83+=" --log-driver=local --log-opt max-size=10m"
-run_cmd_83+=" -e HOST_UID=${host_uid_69} -e HOST_GID=${host_gid_70} -e TERM=${term_71}"
-run_cmd_83+=" -e SANDBOX_PROJECT_DIR=${project_dir_74}"
-if [ "$([ "_${languages_13}" == "_" ]; echo $?)" != 0 ]; then
-    run_cmd_83+=" -e SANDBOX_LANGUAGES=${languages_13}"
+run_cmd_84="docker run -it --rm"
+run_cmd_84+=" --name ${cname_55}"
+run_cmd_84+=" --hostname code-sandbox"
+run_cmd_84+=" -w ${project_dir_75}"
+run_cmd_84+=" --network bridge"
+run_cmd_84+=" --tmpfs /tmp:exec,size=2g"
+run_cmd_84+=" --security-opt=no-new-privileges"
+run_cmd_84+=" --pids-limit=500"
+run_cmd_84+=" --log-driver=local --log-opt max-size=10m"
+run_cmd_84+=" -e HOST_UID=${host_uid_70} -e HOST_GID=${host_gid_71} -e TERM=${term_72}"
+run_cmd_84+=" -e SANDBOX_PROJECT_DIR=${project_dir_75}"
+if [ "$([ "_${languages_12}" == "_" ]; echo $?)" != 0 ]; then
+    run_cmd_84+=" -e SANDBOX_LANGUAGES=${languages_12}"
 fi
-volume_flags__146_v0 "${source_dir_82}" "${folder_73}"
-run_cmd_83+="${ret_volume_flags146_v0}"
-env_flags__145_v0 
-run_cmd_83+="${ret_env_flags145_v0}"
-run_cmd_83+=" ${__IMAGE_NAME_3} ${cmd_68}"
-if [ "$([ "_${sandbox_dir_81}" == "_" ]; echo $?)" != 0 ]; then
-    agent_exit_99=0
-    ${run_cmd_83}
+volume_flags__147_v0 "${source_dir_83}" "${folder_74}"
+run_cmd_84+="${ret_volume_flags147_v0}"
+env_flags__146_v0 
+run_cmd_84+="${ret_env_flags146_v0}"
+run_cmd_84+=" ${__IMAGE_NAME_3} ${cmd_69}"
+if [ "$([ "_${sandbox_dir_82}" == "_" ]; echo $?)" != 0 ]; then
+    agent_exit_100=0
+    ${run_cmd_84}
     __status=$?
     if [ "${__status}" != 0 ]; then
-    code_100="${__status}"
-        agent_exit_99="${code_100}"
+    code_101="${__status}"
+        agent_exit_100="${code_101}"
     fi
-    sandbox_exit__152_v0 "${sandbox_dir_81}" "${pwd_72}"
-    exit ${agent_exit_99}
+    sandbox_exit__153_v0 "${sandbox_dir_82}" "${pwd_73}"
+    exit ${agent_exit_100}
     __status=$?
 else
-    exec ${run_cmd_83}
+    exec ${run_cmd_84}
     __status=$?
     if [ "${__status}" != 0 ]; then
         exit "${__status}"
