@@ -290,7 +290,7 @@ volume_flags__135_v0() {
     __status=$?
     home_48="${command_21}"
     flags_47+=" -v ${source_dir}:/workspace/${folder}"
-    config_dirs_49=(".codex" ".claude" ".gemini" ".opencode" ".code" ".copilot")
+    config_dirs_49=(".codex" ".claude" ".gemini" ".opencode" ".code" ".copilot" ".agents")
     for dir_50 in "${config_dirs_49[@]}"; do
         dir_exists__36_v0 "${home_48}/${dir_50}"
         ret_dir_exists36_v0__120_12="${ret_dir_exists36_v0}"

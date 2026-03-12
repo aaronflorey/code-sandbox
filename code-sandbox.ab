@@ -115,7 +115,7 @@ fun volume_flags(source_dir: Text, folder: Text): Text {
 
     flags += " -v {source_dir}:/workspace/{folder}"
 
-    let config_dirs = [".codex", ".claude", ".gemini", ".opencode", ".code", ".copilot"]
+    let config_dirs = [".codex", ".claude", ".gemini", ".opencode", ".code", ".copilot", ".agents"]
     for dir in config_dirs {
         if dir_exists("{home}/{dir}") {
             flags += " -v {home}/{dir}:/workspace/{dir}"
