@@ -213,12 +213,14 @@ setup_code_symlink__132_v0() {
 setup_mise_env__133_v0() {
     local home_dir=$1
     local project_dir=$2
-    trusted_paths_13="${home_dir}/.config/mise/config.toml:${project_dir}/.mise.toml:${project_dir}/mise.toml"
+    trusted_paths_13="${home_dir}:${home_dir}/.config/mise:${home_dir}/.config/mise/config.toml:${project_dir}:${project_dir}/.mise.toml:${project_dir}/mise.toml"
     export MISE_GLOBAL_CONFIG_FILE="${home_dir}/.config/mise/config.toml"
     __status=$?
     export MISE_GLOBAL_CONFIG_ROOT="${home_dir}"
     __status=$?
     export MISE_TRUSTED_CONFIG_PATHS="${trusted_paths_13}"
+    __status=$?
+    export MISE_YES=1
     __status=$?
 }
 
@@ -295,8 +297,8 @@ install_composer__136_v0() {
         php_available_20=0
     fi
     is_command__103_v0 "composer"
-    ret_is_command103_v0__137_30="${ret_is_command103_v0}"
-    if [ "$(( ${php_available_20} && $(( ! ${ret_is_command103_v0__137_30} )) ))" != 0 ]; then
+    ret_is_command103_v0__138_30="${ret_is_command103_v0}"
+    if [ "$(( ${php_available_20} && $(( ! ${ret_is_command103_v0__138_30} )) ))" != 0 ]; then
         echo "Installing Composer ..."
         gosu "${user}" env HOME="${home_dir}" mise use -g github:composer/composer
         __status=$?
@@ -359,8 +361,8 @@ __status=$?
 export FORCE_COLOR=1
 __status=$?
 dir_exists__39_v0 "${project_dir_7}"
-ret_dir_exists39_v0__175_8="${ret_dir_exists39_v0}"
-if [ "${ret_dir_exists39_v0__175_8}" != 0 ]; then
+ret_dir_exists39_v0__176_8="${ret_dir_exists39_v0}"
+if [ "${ret_dir_exists39_v0__176_8}" != 0 ]; then
     cd "${project_dir_7}"
     __status=$?
 fi
