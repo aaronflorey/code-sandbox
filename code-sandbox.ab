@@ -59,11 +59,83 @@ fun container_name(): Text {
     return "code-sandbox-{base}-{hash_trimmed}"
 }
 
+fun csv_contains(csv: Text, value: Text): Bool {
+    if csv == "" {
+        return false
+    }
+
+    let parts = split(csv, ",")
+    for part in parts {
+        if trim(part) == value {
+            return true
+        }
+    }
+
+    return false
+}
+
+fun append_csv_unique(csv: Text, value: Text): Text {
+    if csv_contains(csv, value) {
+        return csv
+    }
+
+    if csv == "" {
+        return value
+    }
+
+    return "{csv},{value}"
+}
+
+fun marker_exists(project_dir: Text, marker: Text): Bool {
+    let found = trust $ find "{project_dir}" -maxdepth 2 -type f -name "{marker}" -print -quit 2>/dev/null $
+    return trim(found) != ""
+}
+
+fun detect_languages(project_dir: Text): Text {
+    let detected = ""
+
+    if marker_exists(project_dir, "composer.json") {
+        detected = append_csv_unique(detected, "php")
+    }
+    if marker_exists(project_dir, "go.mod") {
+        detected = append_csv_unique(detected, "go")
+    }
+    if marker_exists(project_dir, "Cargo.toml") {
+        detected = append_csv_unique(detected, "rust")
+    }
+    if marker_exists(project_dir, "Gemfile") or marker_exists(project_dir, "*.gemspec") {
+        detected = append_csv_unique(detected, "ruby")
+    }
+    if marker_exists(project_dir, "pom.xml") or marker_exists(project_dir, "build.gradle") or marker_exists(project_dir, "build.gradle.kts") {
+        detected = append_csv_unique(detected, "java")
+    }
+    if marker_exists(project_dir, "pyproject.toml") or marker_exists(project_dir, "requirements.txt") or marker_exists(project_dir, "setup.py") or marker_exists(project_dir, "Pipfile") {
+        detected = append_csv_unique(detected, "python")
+    }
+    if marker_exists(project_dir, "build.zig") {
+        detected = append_csv_unique(detected, "zig")
+    }
+    if marker_exists(project_dir, "rebar.config") or marker_exists(project_dir, "erlang.mk") {
+        detected = append_csv_unique(detected, "erlang")
+    }
+    if marker_exists(project_dir, "mix.exs") {
+        detected = append_csv_unique(detected, "elixir")
+    }
+
+    return detected
+}
+
 fun select_languages(): Text {
     let pwd = trust $ pwd $
 
     if file_exists("{pwd}/.mise.toml") or file_exists("{pwd}/mise.toml") or dir_exists("{pwd}/.mise") {
         return "__mise_toml__"
+    }
+
+    let detected = detect_languages(pwd)
+    if detected != "" {
+        echo "Auto-detected languages from project files: {detected}"
+        return detected
     }
 
     echo ""
