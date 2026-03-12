@@ -2,19 +2,17 @@ import { trim, split, uppercase } from "std/text"
 import { env_var_get, is_command } from "std/env"
 import { dir_exists, file_exists, file_append } from "std/fs"
 
-fun collect_args(args: [Text], start: Int): Text {
-    let result = ""
-    let i = start
-    loop {
-        if i >= len(args): break
-        if result != "": result += " "
-        result += args[i]
-        i += 1
+fun setup_user(host_uid: Text, host_gid: Text, home_dir: Text): Text {
+    // Check if a user with the target UID already exists
+    let existing_user = trust $ getent passwd "{host_uid}" 2>/dev/null | cut -d: -f1 || true $
+    existing_user = trim(existing_user)
+    
+    if existing_user != "" {
+        // User with this UID already exists, use it
+        return existing_user
     }
-    return result
-}
-
-fun setup_user(host_uid: Text, host_gid: Text, home_dir: Text): Null {
+    
+    // Create new group and user
     silent $ getent group code $ failed {
         silent $ groupadd -g "{host_gid}" code $ failed {
             silent trust $ groupadd code $
@@ -25,64 +23,66 @@ fun setup_user(host_uid: Text, host_gid: Text, home_dir: Text): Null {
             silent trust $ useradd -m -d "{home_dir}" -g code -s /bin/bash code $
         }
     }
+    return "code"
 }
 
-fun setup_dirs(home_dir: Text, project_dir: Text): Null {
+fun setup_dirs(home_dir: Text, project_dir: Text, user: Text): Null {
     trust $ mkdir -p "{home_dir}" "{project_dir}" $
-    silent trust $ chown code:code "{home_dir}" $
+    silent trust $ chown "{user}:{user}" "{home_dir}" $
 }
 
-fun setup_sudo(): Null {
-    trust $ echo "code ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/code $
+fun setup_sudo(user: Text): Null {
+    trust $ echo "{user} ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/code $
     trust $ chmod 0440 /etc/sudoers.d/code $
 }
 
-fun setup_git(home_dir: Text, project_dir: Text): Null {
+fun setup_git(home_dir: Text, project_dir: Text, user: Text): Null {
     silent trust $ git config --global --add safe.directory "{home_dir}" $
     silent trust $ git config --global --add safe.directory "{project_dir}" $
     if not file_exists("{home_dir}/.gitconfig") {
-        trust $ gosu code git config --global user.name "code" $
-        trust $ gosu code git config --global user.email "code@sandbox" $
+        trust $ gosu "{user}" git config --global user.name "{user}" $
+        trust $ gosu "{user}" git config --global user.email "{user}@sandbox" $
     }
 }
 
-fun setup_local_dirs(home_dir: Text): Null {
+fun setup_local_dirs(home_dir: Text, user: Text): Null {
     trust $ mkdir -p "{home_dir}/.local/share/mise" "{home_dir}/.local/bin" "{home_dir}/.config/mise" "{home_dir}/.config/composer" $
-    silent trust $ chown -R code:code "{home_dir}/.local" "{home_dir}/.config" $
+    silent trust $ chown -R "{user}:{user}" "{home_dir}/.local" "{home_dir}/.config" $
     if dir_exists("/usr/local/install/global/node_modules/@just-every/code") {
-        silent trust $ chown -R code:code "/usr/local/install/global/node_modules/@just-every/code" $
+        silent trust $ chown -R "{user}:{user}" "/usr/local/install/global/node_modules/@just-every/code" $
     }
 }
 
-fun setup_bashrc(home_dir: Text): Null {
+fun setup_bashrc(home_dir: Text, user: Text): Null {
     let bashrc = "{home_dir}/.bashrc"
     let has_mise = true
     silent $ grep -q "mise activate" "{bashrc}" $ failed {
         has_mise = false
     }
     if not has_mise {
-        // \$ writes a literal $ so bash sources the file with eval "$(mise activate bash)" intact
-        trust file_append(bashrc, "eval \"\$(mise activate bash)\"\n")
-        silent trust $ chown code:code "{bashrc}" $
+        // Write the mise activation line
+        // Double backslash so one survives compilation, %b interprets \\044 as $
+        trust $ printf 'eval "\\044(mise activate bash)"\n' >> "{bashrc}" $
+        silent trust $ chown "{user}:{user}" "{bashrc}" $
     }
 }
 
-fun setup_code_symlink(home_dir: Text): Null {
+fun setup_code_symlink(home_dir: Text, user: Text): Null {
     if not is_command("code") {
         if is_command("coder") {
             let coder_path = trust $ command -v coder $
             trust $ ln -sf "{coder_path}" "{home_dir}/.local/bin/code" $
-            silent trust $ chown code:code "{home_dir}/.local/bin/code" $
+            silent trust $ chown "{user}:{user}" "{home_dir}/.local/bin/code" $
         }
     }
 }
 
-fun install_languages(sandbox_languages: Text, project_dir: Text): Null {
+fun install_languages(sandbox_languages: Text, project_dir: Text, user: Text): Null {
     if sandbox_languages == "__mise_toml__" {
         echo "Installing languages from .mise.toml ..."
         trust $ cd "{project_dir}" $
-        trust $ gosu code mise install -y $
-        trust $ gosu code mise reshim $
+        trust $ gosu "{user}" mise install -y $
+        trust $ gosu "{user}" mise reshim $
     } else {
         let langs = split(sandbox_languages, ",")
         for lang in langs {
@@ -90,17 +90,17 @@ fun install_languages(sandbox_languages: Text, project_dir: Text): Null {
             if l == "": continue
             if l == "all" {
                 echo "Installing all languages via mise (php, go, rust, ruby, java, python, zig, erlang, elixir) ..."
-                trust $ gosu code mise use -g github:adwinying/php@8.4 go@latest rust@latest ruby@latest java@latest python@latest zig@latest erlang@latest elixir@latest $
-                trust $ gosu code mise reshim $
+                trust $ gosu "{user}" mise use -g github:adwinying/php@8.4 go@latest rust@latest ruby@latest java@latest python@latest zig@latest erlang@latest elixir@latest $
+                trust $ gosu "{user}" mise reshim $
                 break
             }
             if {
                 l == "php" or l == "go" or l == "rust" or l == "ruby" or l == "java" or l == "python" or l == "zig" or l == "erlang" or l == "elixir" {
                     echo "Installing {l} via mise ..."
                     if l == "php" {
-                        trust $ gosu code mise use -g github:adwinying/php@8.4 $
+                        trust $ gosu "{user}" mise use -g github:adwinying/php@8.4 $
                     } else {
-                        trust $ gosu code mise use -g "{l}@latest" $
+                        trust $ gosu "{user}" mise use -g "{l}@latest" $
                     }
                 }
                 else {
@@ -108,19 +108,19 @@ fun install_languages(sandbox_languages: Text, project_dir: Text): Null {
                 }
             }
         }
-        trust $ gosu code mise reshim $
+        trust $ gosu "{user}" mise reshim $
     }
 }
 
-fun install_composer(home_dir: Text): Null {
+fun install_composer(home_dir: Text, user: Text): Null {
     let php_available = true
-    silent $ gosu code mise which php $ failed {
+    silent $ gosu "{user}" mise which php $ failed {
         php_available = false
     }
     if php_available and not is_command("composer") {
         echo "Installing Composer ..."
-        trust $ gosu code mise use -g github:composer/composer $
-        trust $ gosu code mise reshim $
+        trust $ gosu "{user}" mise use -g github:composer/composer $
+        trust $ gosu "{user}" mise reshim $
     }
 }
 
@@ -132,24 +132,24 @@ main(args) {
 
     trust $ export HOME="{home_dir}" $
 
-    setup_user(host_uid, host_gid, home_dir)
-    setup_dirs(home_dir, project_dir)
-    setup_sudo()
-    setup_git(home_dir, project_dir)
-    setup_local_dirs(home_dir)
-    setup_bashrc(home_dir)
+    let user = setup_user(host_uid, host_gid, home_dir)
+    setup_dirs(home_dir, project_dir, user)
+    setup_sudo(user)
+    setup_git(home_dir, project_dir, user)
+    setup_local_dirs(home_dir, user)
+    setup_bashrc(home_dir, user)
 
     let current_path = env_var_get("PATH") failed { "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" }
     trust $ export PATH="{home_dir}/.local/share/mise/shims:{home_dir}/.local/bin:/usr/local/bun/bin:{current_path}" $
 
-    setup_code_symlink(home_dir)
+    setup_code_symlink(home_dir, user)
 
     let sandbox_languages = env_var_get("SANDBOX_LANGUAGES") failed { "" }
     if sandbox_languages != "" {
-        install_languages(sandbox_languages, project_dir)
+        install_languages(sandbox_languages, project_dir, user)
     }
 
-    install_composer(home_dir)
+    install_composer(home_dir, user)
 
     trust $ export COLORTERM=truecolor $
     trust $ export FORCE_COLOR=1 $
@@ -158,6 +158,7 @@ main(args) {
         trust $ cd "{project_dir}" $
     }
 
-    let cmd = collect_args(args, 1)
-    $ exec gosu code {cmd} $?
+    // Exec with env HOME to preserve our home directory setting after gosu
+    // Use "$@" to preserve argument quoting
+    $ exec gosu "{user}" env HOME="{home_dir}" "\$@" $?
 }
