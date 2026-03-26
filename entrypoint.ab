@@ -53,6 +53,29 @@ fun setup_local_dirs(home_dir: Text, user: Text): Null {
     }
 }
 
+fun setup_shadow_configs(home_dir: Text, user: Text): Null {
+    let shadow_configs = env_var_get("SANDBOX_SHADOW_CONFIGS") failed { "" }
+    if shadow_configs == "1" {
+        let host_config_root = env_var_get("SANDBOX_HOST_CONFIG_ROOT") failed { "{home_dir}/.sandbox-host-config" }
+        let config_dirs = [".codex", ".claude", ".gemini", ".opencode", ".code", ".copilot", ".agents"]
+        for dir in config_dirs {
+            if dir_exists("{host_config_root}/{dir}") {
+                trust $ mkdir -p "{home_dir}/{dir}" $
+                trust $ cp -a "{host_config_root}/{dir}/." "{home_dir}/{dir}/" $
+                silent trust $ chown -R "{user}:{user}" "{home_dir}/{dir}" $
+            }
+        }
+
+        let config_files = [".claude.json"]
+        for file in config_files {
+            if file_exists("{host_config_root}/{file}") {
+                trust $ cp -a "{host_config_root}/{file}" "{home_dir}/{file}" $
+                silent trust $ chown "{user}:{user}" "{home_dir}/{file}" $
+            }
+        }
+    }
+}
+
 fun setup_bashrc(home_dir: Text, user: Text): Null {
     let bashrc = "{home_dir}/.bashrc"
     let has_mise = true
@@ -156,6 +179,7 @@ main(args) {
     setup_sudo(user)
     setup_git(home_dir, project_dir, user)
     setup_local_dirs(home_dir, user)
+    setup_shadow_configs(home_dir, user)
     setup_bashrc(home_dir, user)
 
     let current_path = env_var_get("PATH") failed { "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" }

@@ -6,10 +6,10 @@
 split__5_v0() {
     local text=$1
     local delimiter=$2
-    result_16=()
-    IFS="${delimiter}" read -rd '' -a result_16 < <(printf %s "$text")
+    result_22=()
+    IFS="${delimiter}" read -rd '' -a result_22 < <(printf %s "$text")
     __status=$?
-    ret_split5_v0=("${result_16[@]}")
+    ret_split5_v0=("${result_22[@]}")
     return 0
 }
 
@@ -169,40 +169,83 @@ setup_local_dirs__130_v0() {
     fi
 }
 
-setup_bashrc__131_v0() {
+setup_shadow_configs__131_v0() {
     local home_dir=$1
     local user=$2
-    bashrc_10="${home_dir}/.bashrc"
-    has_mise_11=1
-    grep -q "mise activate" "${bashrc_10}" >/dev/null 2>&1
+    env_var_get__101_v0 "SANDBOX_SHADOW_CONFIGS"
     __status=$?
     if [ "${__status}" != 0 ]; then
-        has_mise_11=0
+        :
     fi
-    if [ "$(( ! ${has_mise_11} ))" != 0 ]; then
+    shadow_configs_10="${ret_env_var_get101_v0}"
+    if [ "$([ "_${shadow_configs_10}" != "_1" ]; echo $?)" != 0 ]; then
+        env_var_get__101_v0 "SANDBOX_HOST_CONFIG_ROOT"
+        __status=$?
+        if [ "${__status}" != 0 ]; then
+            :
+        fi
+        host_config_root_11="${ret_env_var_get101_v0}"
+        config_dirs_12=(".codex" ".claude" ".gemini" ".opencode" ".code" ".copilot" ".agents")
+        for dir_13 in "${config_dirs_12[@]}"; do
+            dir_exists__39_v0 "${host_config_root_11}/${dir_13}"
+            ret_dir_exists39_v0__62_16="${ret_dir_exists39_v0}"
+            if [ "${ret_dir_exists39_v0__62_16}" != 0 ]; then
+                mkdir -p "${home_dir}/${dir_13}"
+                __status=$?
+                cp -a "${host_config_root_11}/${dir_13}/." "${home_dir}/${dir_13}/"
+                __status=$?
+                chown -R "${user}:${user}" "${home_dir}/${dir_13}" >/dev/null 2>&1
+                __status=$?
+            fi
+        done
+        config_files_14=(".claude.json")
+        for file_15 in "${config_files_14[@]}"; do
+            file_exists__40_v0 "${host_config_root_11}/${file_15}"
+            ret_file_exists40_v0__71_16="${ret_file_exists40_v0}"
+            if [ "${ret_file_exists40_v0__71_16}" != 0 ]; then
+                cp -a "${host_config_root_11}/${file_15}" "${home_dir}/${file_15}"
+                __status=$?
+                chown "${user}:${user}" "${home_dir}/${file_15}" >/dev/null 2>&1
+                __status=$?
+            fi
+        done
+    fi
+}
+
+setup_bashrc__132_v0() {
+    local home_dir=$1
+    local user=$2
+    bashrc_16="${home_dir}/.bashrc"
+    has_mise_17=1
+    grep -q "mise activate" "${bashrc_16}" >/dev/null 2>&1
+    __status=$?
+    if [ "${__status}" != 0 ]; then
+        has_mise_17=0
+    fi
+    if [ "$(( ! ${has_mise_17} ))" != 0 ]; then
         # Write the mise activation line
         # Double backslash so one survives compilation, %b interprets \\044 as $
         printf 'eval "\044(mise activate bash)"
-' >> "${bashrc_10}"
+' >> "${bashrc_16}"
         __status=$?
-        chown "${user}:${user}" "${bashrc_10}" >/dev/null 2>&1
+        chown "${user}:${user}" "${bashrc_16}" >/dev/null 2>&1
         __status=$?
     fi
 }
 
-setup_code_symlink__132_v0() {
+setup_code_symlink__133_v0() {
     local home_dir=$1
     local user=$2
     is_command__103_v0 "code"
-    ret_is_command103_v0__71_12="${ret_is_command103_v0}"
-    if [ "$(( ! ${ret_is_command103_v0__71_12} ))" != 0 ]; then
+    ret_is_command103_v0__94_12="${ret_is_command103_v0}"
+    if [ "$(( ! ${ret_is_command103_v0__94_12} ))" != 0 ]; then
         is_command__103_v0 "coder"
-        ret_is_command103_v0__72_12="${ret_is_command103_v0}"
-        if [ "${ret_is_command103_v0__72_12}" != 0 ]; then
-            command_5="$(command -v coder)"
+        ret_is_command103_v0__95_12="${ret_is_command103_v0}"
+        if [ "${ret_is_command103_v0__95_12}" != 0 ]; then
+            command_7="$(command -v coder)"
             __status=$?
-            coder_path_14="${command_5}"
-            ln -sf "${coder_path_14}" "${home_dir}/.local/bin/code"
+            coder_path_20="${command_7}"
+            ln -sf "${coder_path_20}" "${home_dir}/.local/bin/code"
             __status=$?
             chown "${user}:${user}" "${home_dir}/.local/bin/code" >/dev/null 2>&1
             __status=$?
@@ -210,21 +253,21 @@ setup_code_symlink__132_v0() {
     fi
 }
 
-setup_mise_env__133_v0() {
+setup_mise_env__134_v0() {
     local home_dir=$1
     local project_dir=$2
-    trusted_paths_13="${home_dir}:${home_dir}/.config/mise:${home_dir}/.config/mise/config.toml:${project_dir}:${project_dir}/.mise.toml:${project_dir}/mise.toml"
+    trusted_paths_19="${home_dir}:${home_dir}/.config/mise:${home_dir}/.config/mise/config.toml:${project_dir}:${project_dir}/.mise.toml:${project_dir}/mise.toml"
     export MISE_GLOBAL_CONFIG_FILE="${home_dir}/.config/mise/config.toml"
     __status=$?
     export MISE_GLOBAL_CONFIG_ROOT="${home_dir}"
     __status=$?
-    export MISE_TRUSTED_CONFIG_PATHS="${trusted_paths_13}"
+    export MISE_TRUSTED_CONFIG_PATHS="${trusted_paths_19}"
     __status=$?
     export MISE_YES=1
     __status=$?
 }
 
-install_php__134_v0() {
+install_php__135_v0() {
     local home_dir=$1
     local user=$2
     gosu "${user}" env HOME="${home_dir}" mise use -g github:aaronflorey/php@8.4 >/dev/null 2>&1
@@ -239,7 +282,7 @@ install_php__134_v0() {
     fi
 }
 
-install_languages__135_v0() {
+install_languages__136_v0() {
     local sandbox_languages=$1
     local project_dir=$2
     local home_dir=$3
@@ -254,32 +297,32 @@ install_languages__135_v0() {
         __status=$?
     else
         split__5_v0 "${sandbox_languages}" ","
-        langs_17=("${ret_split5_v0[@]}")
-        for lang_18 in "${langs_17[@]}"; do
-            trim__11_v0 "${lang_18}"
-            l_19="${ret_trim11_v0}"
-            if [ "$([ "_${l_19}" != "_" ]; echo $?)" != 0 ]; then
+        langs_23=("${ret_split5_v0[@]}")
+        for lang_24 in "${langs_23[@]}"; do
+            trim__11_v0 "${lang_24}"
+            l_25="${ret_trim11_v0}"
+            if [ "$([ "_${l_25}" != "_" ]; echo $?)" != 0 ]; then
                 continue
             fi
-            if [ "$([ "_${l_19}" != "_all" ]; echo $?)" != 0 ]; then
+            if [ "$([ "_${l_25}" != "_all" ]; echo $?)" != 0 ]; then
                 echo "Installing all languages via mise (php, go, rust, ruby, java, python, zig, erlang, elixir) ..."
-                install_php__134_v0 "${home_dir}" "${user}"
+                install_php__135_v0 "${home_dir}" "${user}"
                 gosu "${user}" env HOME="${home_dir}" mise use -g go@latest rust@latest ruby@latest java@latest python@latest zig@latest erlang@latest elixir@latest
                 __status=$?
                 gosu "${user}" env HOME="${home_dir}" mise reshim
                 __status=$?
                 break
             fi
-            if [ "$(( $(( $(( $(( $(( $(( $(( $(( $([ "_${l_19}" != "_php" ]; echo $?) || $([ "_${l_19}" != "_go" ]; echo $?) )) || $([ "_${l_19}" != "_rust" ]; echo $?) )) || $([ "_${l_19}" != "_ruby" ]; echo $?) )) || $([ "_${l_19}" != "_java" ]; echo $?) )) || $([ "_${l_19}" != "_python" ]; echo $?) )) || $([ "_${l_19}" != "_zig" ]; echo $?) )) || $([ "_${l_19}" != "_erlang" ]; echo $?) )) || $([ "_${l_19}" != "_elixir" ]; echo $?) ))" != 0 ]; then
-                echo "Installing ${l_19} via mise ..."
-                if [ "$([ "_${l_19}" != "_php" ]; echo $?)" != 0 ]; then
-                    install_php__134_v0 "${home_dir}" "${user}"
+            if [ "$(( $(( $(( $(( $(( $(( $(( $(( $([ "_${l_25}" != "_php" ]; echo $?) || $([ "_${l_25}" != "_go" ]; echo $?) )) || $([ "_${l_25}" != "_rust" ]; echo $?) )) || $([ "_${l_25}" != "_ruby" ]; echo $?) )) || $([ "_${l_25}" != "_java" ]; echo $?) )) || $([ "_${l_25}" != "_python" ]; echo $?) )) || $([ "_${l_25}" != "_zig" ]; echo $?) )) || $([ "_${l_25}" != "_erlang" ]; echo $?) )) || $([ "_${l_25}" != "_elixir" ]; echo $?) ))" != 0 ]; then
+                echo "Installing ${l_25} via mise ..."
+                if [ "$([ "_${l_25}" != "_php" ]; echo $?)" != 0 ]; then
+                    install_php__135_v0 "${home_dir}" "${user}"
                 else
-                    gosu "${user}" env HOME="${home_dir}" mise use -g "${l_19}@latest"
+                    gosu "${user}" env HOME="${home_dir}" mise use -g "${l_25}@latest"
                     __status=$?
                 fi
             else
-                echo "Unknown language: ${l_19} (skipping)"
+                echo "Unknown language: ${l_25} (skipping)"
             fi
         done
         gosu "${user}" env HOME="${home_dir}" mise reshim
@@ -287,18 +330,18 @@ install_languages__135_v0() {
     fi
 }
 
-install_composer__136_v0() {
+install_composer__137_v0() {
     local home_dir=$1
     local user=$2
-    php_available_20=1
+    php_available_26=1
     gosu "${user}" env HOME="${home_dir}" mise which php >/dev/null 2>&1
     __status=$?
     if [ "${__status}" != 0 ]; then
-        php_available_20=0
+        php_available_26=0
     fi
     is_command__103_v0 "composer"
-    ret_is_command103_v0__138_30="${ret_is_command103_v0}"
-    if [ "$(( ${php_available_20} && $(( ! ${ret_is_command103_v0__138_30} )) ))" != 0 ]; then
+    ret_is_command103_v0__161_30="${ret_is_command103_v0}"
+    if [ "$(( ${php_available_26} && $(( ! ${ret_is_command103_v0__161_30} )) ))" != 0 ]; then
         echo "Installing Composer ..."
         gosu "${user}" env HOME="${home_dir}" curl -fsSL "https://getcomposer.org/download/latest-stable/composer.phar" -o "${home_dir}/.local/bin/composer"
         __status=$?
@@ -337,34 +380,35 @@ setup_dirs__127_v0 "${home_dir_6}" "${project_dir_7}" "${user_9}"
 setup_sudo__128_v0 "${user_9}"
 setup_git__129_v0 "${home_dir_6}" "${project_dir_7}" "${user_9}"
 setup_local_dirs__130_v0 "${home_dir_6}" "${user_9}"
-setup_bashrc__131_v0 "${home_dir_6}" "${user_9}"
+setup_shadow_configs__131_v0 "${home_dir_6}" "${user_9}"
+setup_bashrc__132_v0 "${home_dir_6}" "${user_9}"
 env_var_get__101_v0 "PATH"
 __status=$?
 if [ "${__status}" != 0 ]; then
     :
 fi
-current_path_12="${ret_env_var_get101_v0}"
-export PATH="${home_dir_6}/.local/share/mise/shims:${home_dir_6}/.local/bin:/usr/local/bun/bin:${current_path_12}"
+current_path_18="${ret_env_var_get101_v0}"
+export PATH="${home_dir_6}/.local/share/mise/shims:${home_dir_6}/.local/bin:/usr/local/bun/bin:${current_path_18}"
 __status=$?
-setup_mise_env__133_v0 "${home_dir_6}" "${project_dir_7}"
-setup_code_symlink__132_v0 "${home_dir_6}" "${user_9}"
+setup_mise_env__134_v0 "${home_dir_6}" "${project_dir_7}"
+setup_code_symlink__133_v0 "${home_dir_6}" "${user_9}"
 env_var_get__101_v0 "SANDBOX_LANGUAGES"
 __status=$?
 if [ "${__status}" != 0 ]; then
     :
 fi
-sandbox_languages_15="${ret_env_var_get101_v0}"
-if [ "$([ "_${sandbox_languages_15}" == "_" ]; echo $?)" != 0 ]; then
-    install_languages__135_v0 "${sandbox_languages_15}" "${project_dir_7}" "${home_dir_6}" "${user_9}"
+sandbox_languages_21="${ret_env_var_get101_v0}"
+if [ "$([ "_${sandbox_languages_21}" == "_" ]; echo $?)" != 0 ]; then
+    install_languages__136_v0 "${sandbox_languages_21}" "${project_dir_7}" "${home_dir_6}" "${user_9}"
 fi
-install_composer__136_v0 "${home_dir_6}" "${user_9}"
+install_composer__137_v0 "${home_dir_6}" "${user_9}"
 export COLORTERM=truecolor
 __status=$?
 export FORCE_COLOR=1
 __status=$?
 dir_exists__39_v0 "${project_dir_7}"
-ret_dir_exists39_v0__177_8="${ret_dir_exists39_v0}"
-if [ "${ret_dir_exists39_v0__177_8}" != 0 ]; then
+ret_dir_exists39_v0__201_8="${ret_dir_exists39_v0}"
+if [ "${ret_dir_exists39_v0__201_8}" != 0 ]; then
     cd "${project_dir_7}"
     __status=$?
 fi

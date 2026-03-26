@@ -14,6 +14,7 @@ fun show_help() {
     echo "  --pull                  Pull the latest pre-built Docker image"
     echo "  --update                Force an immediate update check before launch"
     echo "  --shell                 Open a bash shell (skip agent menu)"
+    echo "  --skip-permissions      Launch supported agents with their permission bypass flag"
     echo "  --languages <list>      Install mise languages (comma-separated)"
     echo "  --languages=<list>      Same as above"
     echo "  -h, --help              Show this help message"
@@ -318,23 +319,32 @@ fun env_flags(): Text {
     return flags
 }
 
-fun volume_flags(source_dir: Text, folder: Text): Text {
+fun volume_flags(source_dir: Text, folder: Text, skip_permissions: Bool): Text {
     let flags = ""
     let home = trust $ printenv HOME $
+    let shadow_root = "/workspace/.sandbox-host-config"
 
     flags += " -v {source_dir}:/workspace/{folder}"
 
     let config_dirs = [".codex", ".claude", ".gemini", ".opencode", ".code", ".copilot", ".agents"]
     for dir in config_dirs {
         if dir_exists("{home}/{dir}") {
-            flags += " -v {home}/{dir}:/workspace/{dir}"
+            if skip_permissions {
+                flags += " -v {home}/{dir}:{shadow_root}/{dir}:ro"
+            } else {
+                flags += " -v {home}/{dir}:/workspace/{dir}"
+            }
         }
     }
 
     let config_files = [".claude.json"]
     for file in config_files {
         if file_exists("{home}/{file}") {
-            flags += " -v {home}/{file}:/workspace/{file}"
+            if skip_permissions {
+                flags += " -v {home}/{file}:{shadow_root}/{file}:ro"
+            } else {
+                flags += " -v {home}/{file}:/workspace/{file}"
+            }
         }
     }
 
@@ -398,6 +408,42 @@ fun resolve_cmd(shell_mode: Bool, explicit_cmd: Bool, pass_args: Text): Text {
     if shell_mode: return "bash"
     if explicit_cmd and pass_args != "": return pass_args
     return show_menu()
+}
+
+fun skip_permissions_flag(cmd: Text): Text {
+    if {
+        cmd == "claude" {
+            return " --dangerously-skip-permissions"
+        }
+        cmd == "codex" {
+            return " --dangerously-bypass-approvals-and-sandbox"
+        }
+        cmd == "gemini" {
+            return " --yolo"
+        }
+        cmd == "copilot" {
+            return " --allow-all-tools"
+        }
+        cmd == "code" {
+            return " --no-approval"
+        }
+        else {
+            return ""
+        }
+    }
+}
+
+fun apply_skip_permissions(cmd: Text, skip_permissions: Bool): Text {
+    if not skip_permissions {
+        return cmd
+    }
+
+    let flag = skip_permissions_flag(cmd)
+    if flag == "" {
+        return cmd
+    }
+
+    return "{cmd}{flag}"
 }
 
 fun get_container_state(cname: Text): Text {
@@ -515,6 +561,7 @@ main(args) {
     let do_build = false
     let do_update = false
     let shell_mode = false
+    let skip_permissions = false
     let help_mode = false
     let languages = "__prompt__"
     let pass_args = ""
@@ -540,6 +587,9 @@ main(args) {
             }
             arg == "--shell" {
                 shell_mode = true
+            }
+            arg == "--skip-permissions" {
+                skip_permissions = true
             }
             arg == "--help" or arg == "-h" {
                 help_mode = true
@@ -599,7 +649,7 @@ main(args) {
 
     if state == "running" {
         echo "Attaching to running container {cname} ..."
-        let cmd = resolve_cmd(shell_mode, explicit_cmd, pass_args)
+        let cmd = apply_skip_permissions(resolve_cmd(shell_mode, explicit_cmd, pass_args), skip_permissions)
         $ exec docker exec -it -e TERM=xterm-256color -e COLORTERM=truecolor -e FORCE_COLOR=1 "{cname}" gosu code {cmd} $?
     }
 
@@ -612,7 +662,7 @@ main(args) {
         languages = select_languages()
     }
 
-    let cmd = resolve_cmd(shell_mode, explicit_cmd, pass_args)
+    let cmd = apply_skip_permissions(resolve_cmd(shell_mode, explicit_cmd, pass_args), skip_permissions)
 
     // Build docker run command
     let host_uid = trust $ id -u $
@@ -647,7 +697,12 @@ main(args) {
         run_cmd += " -e SANDBOX_LANGUAGES={languages}"
     }
 
-    run_cmd += volume_flags(source_dir, folder)
+    if skip_permissions {
+        run_cmd += " -e SANDBOX_SHADOW_CONFIGS=1"
+        run_cmd += " -e SANDBOX_HOST_CONFIG_ROOT=/workspace/.sandbox-host-config"
+    }
+
+    run_cmd += volume_flags(source_dir, folder, skip_permissions)
     run_cmd += env_flags()
     run_cmd += " {IMAGE_NAME} {cmd}"
 
