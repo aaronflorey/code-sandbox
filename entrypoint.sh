@@ -209,6 +209,46 @@ setup_shadow_configs__131_v0() {
                 __status=$?
             fi
         done
+        dir_exists__39_v0 "${host_config_root_11}/.config/opencode"
+        ret_dir_exists39_v0__77_12="${ret_dir_exists39_v0}"
+        if [ "${ret_dir_exists39_v0__77_12}" != 0 ]; then
+            mkdir -p "${home_dir}/.config/opencode"
+            __status=$?
+            cp -a "${host_config_root_11}/.config/opencode/." "${home_dir}/.config/opencode/"
+            __status=$?
+            chown -R "${user}:${user}" "${home_dir}/.config/opencode" >/dev/null 2>&1
+            __status=$?
+        fi
+        dir_exists__39_v0 "${host_config_root_11}/.cache/opencode"
+        ret_dir_exists39_v0__83_12="${ret_dir_exists39_v0}"
+        if [ "${ret_dir_exists39_v0__83_12}" != 0 ]; then
+            mkdir -p "${home_dir}/.cache/opencode"
+            __status=$?
+            cp -a "${host_config_root_11}/.cache/opencode/." "${home_dir}/.cache/opencode/"
+            __status=$?
+            chown -R "${user}:${user}" "${home_dir}/.cache/opencode" >/dev/null 2>&1
+            __status=$?
+        fi
+        dir_exists__39_v0 "${host_config_root_11}/.local/share/opencode"
+        ret_dir_exists39_v0__89_12="${ret_dir_exists39_v0}"
+        if [ "${ret_dir_exists39_v0__89_12}" != 0 ]; then
+            mkdir -p "${home_dir}/.local/share/opencode"
+            __status=$?
+            cp -a "${host_config_root_11}/.local/share/opencode/." "${home_dir}/.local/share/opencode/"
+            __status=$?
+            chown -R "${user}:${user}" "${home_dir}/.local/share/opencode" >/dev/null 2>&1
+            __status=$?
+        fi
+        dir_exists__39_v0 "${host_config_root_11}/.local/state/opencode"
+        ret_dir_exists39_v0__95_12="${ret_dir_exists39_v0}"
+        if [ "${ret_dir_exists39_v0__95_12}" != 0 ]; then
+            mkdir -p "${home_dir}/.local/state/opencode"
+            __status=$?
+            cp -a "${host_config_root_11}/.local/state/opencode/." "${home_dir}/.local/state/opencode/"
+            __status=$?
+            chown -R "${user}:${user}" "${home_dir}/.local/state/opencode" >/dev/null 2>&1
+            __status=$?
+        fi
     fi
 }
 
@@ -237,11 +277,11 @@ setup_code_symlink__133_v0() {
     local home_dir=$1
     local user=$2
     is_command__103_v0 "code"
-    ret_is_command103_v0__94_12="${ret_is_command103_v0}"
-    if [ "$(( ! ${ret_is_command103_v0__94_12} ))" != 0 ]; then
+    ret_is_command103_v0__118_12="${ret_is_command103_v0}"
+    if [ "$(( ! ${ret_is_command103_v0__118_12} ))" != 0 ]; then
         is_command__103_v0 "coder"
-        ret_is_command103_v0__95_12="${ret_is_command103_v0}"
-        if [ "${ret_is_command103_v0__95_12}" != 0 ]; then
+        ret_is_command103_v0__119_12="${ret_is_command103_v0}"
+        if [ "${ret_is_command103_v0__119_12}" != 0 ]; then
             command_7="$(command -v coder)"
             __status=$?
             coder_path_20="${command_7}"
@@ -340,8 +380,8 @@ install_composer__137_v0() {
         php_available_26=0
     fi
     is_command__103_v0 "composer"
-    ret_is_command103_v0__161_30="${ret_is_command103_v0}"
-    if [ "$(( ${php_available_26} && $(( ! ${ret_is_command103_v0__161_30} )) ))" != 0 ]; then
+    ret_is_command103_v0__185_30="${ret_is_command103_v0}"
+    if [ "$(( ${php_available_26} && $(( ! ${ret_is_command103_v0__185_30} )) ))" != 0 ]; then
         echo "Installing Composer ..."
         gosu "${user}" env HOME="${home_dir}" curl -fsSL "https://getcomposer.org/download/latest-stable/composer.phar" -o "${home_dir}/.local/bin/composer"
         __status=$?
@@ -407,8 +447,8 @@ __status=$?
 export FORCE_COLOR=1
 __status=$?
 dir_exists__39_v0 "${project_dir_7}"
-ret_dir_exists39_v0__201_8="${ret_dir_exists39_v0}"
-if [ "${ret_dir_exists39_v0__201_8}" != 0 ]; then
+ret_dir_exists39_v0__225_8="${ret_dir_exists39_v0}"
+if [ "${ret_dir_exists39_v0__225_8}" != 0 ]; then
     cd "${project_dir_7}"
     __status=$?
 fi

@@ -337,6 +337,38 @@ fun volume_flags(source_dir: Text, folder: Text, skip_permissions: Bool): Text {
         }
     }
 
+    if dir_exists("{home}/.config/opencode") {
+        if skip_permissions {
+            flags += " -v {home}/.config/opencode:{shadow_root}/.config/opencode:ro"
+        } else {
+            flags += " -v {home}/.config/opencode:/workspace/.config/opencode"
+        }
+    }
+
+    if dir_exists("{home}/.cache/opencode") {
+        if skip_permissions {
+            flags += " -v {home}/.cache/opencode:{shadow_root}/.cache/opencode:ro"
+        } else {
+            flags += " -v {home}/.cache/opencode:/workspace/.cache/opencode"
+        }
+    }
+
+    if dir_exists("{home}/.local/share/opencode") {
+        if skip_permissions {
+            flags += " -v {home}/.local/share/opencode:{shadow_root}/.local/share/opencode:ro"
+        } else {
+            flags += " -v {home}/.local/share/opencode:/workspace/.local/share/opencode"
+        }
+    }
+
+    if dir_exists("{home}/.local/state/opencode") {
+        if skip_permissions {
+            flags += " -v {home}/.local/state/opencode:{shadow_root}/.local/state/opencode:ro"
+        } else {
+            flags += " -v {home}/.local/state/opencode:/workspace/.local/state/opencode"
+        }
+    }
+
     let config_files = [".claude.json"]
     for file in config_files {
         if file_exists("{home}/{file}") {

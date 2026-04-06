@@ -73,6 +73,30 @@ fun setup_shadow_configs(home_dir: Text, user: Text): Null {
                 silent trust $ chown "{user}:{user}" "{home_dir}/{file}" $
             }
         }
+
+        if dir_exists("{host_config_root}/.config/opencode") {
+            trust $ mkdir -p "{home_dir}/.config/opencode" $
+            trust $ cp -a "{host_config_root}/.config/opencode/." "{home_dir}/.config/opencode/" $
+            silent trust $ chown -R "{user}:{user}" "{home_dir}/.config/opencode" $
+        }
+
+        if dir_exists("{host_config_root}/.cache/opencode") {
+            trust $ mkdir -p "{home_dir}/.cache/opencode" $
+            trust $ cp -a "{host_config_root}/.cache/opencode/." "{home_dir}/.cache/opencode/" $
+            silent trust $ chown -R "{user}:{user}" "{home_dir}/.cache/opencode" $
+        }
+
+        if dir_exists("{host_config_root}/.local/share/opencode") {
+            trust $ mkdir -p "{home_dir}/.local/share/opencode" $
+            trust $ cp -a "{host_config_root}/.local/share/opencode/." "{home_dir}/.local/share/opencode/" $
+            silent trust $ chown -R "{user}:{user}" "{home_dir}/.local/share/opencode" $
+        }
+
+        if dir_exists("{host_config_root}/.local/state/opencode") {
+            trust $ mkdir -p "{home_dir}/.local/state/opencode" $
+            trust $ cp -a "{host_config_root}/.local/state/opencode/." "{home_dir}/.local/state/opencode/" $
+            silent trust $ chown -R "{user}:{user}" "{home_dir}/.local/state/opencode" $
+        }
     }
 }
 
