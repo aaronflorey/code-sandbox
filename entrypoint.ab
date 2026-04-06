@@ -48,7 +48,7 @@ fun setup_git(home_dir: Text, project_dir: Text, user: Text): Null {
 fun setup_local_dirs(home_dir: Text, user: Text): Null {
     trust $ mkdir -p "{home_dir}/.local/share/mise" "{home_dir}/.local/bin" "{home_dir}/.config/mise" "{home_dir}/.config/composer" "{home_dir}/.cache/mise" $
     silent trust $ chown -R "{user}:{user}" "{home_dir}/.local" "{home_dir}/.config" $
-    silent trust $ chown "{user}:{user}" "{home_dir}/.cache" $
+    silent trust $ chown -R "{user}:{user}" "{home_dir}/.cache" $
     if dir_exists("/usr/local/install/global/node_modules/@just-every/code") {
         silent trust $ chown -R "{user}:{user}" "/usr/local/install/global/node_modules/@just-every/code" $
     }
@@ -196,6 +196,9 @@ main(args) {
     let host_gid = env_var_get("HOST_GID") failed { "1000" }
     const home_dir = "/workspace"
     let project_dir = env_var_get("SANDBOX_PROJECT_DIR") failed { "/workspace" }
+    if project_dir == "" {
+        project_dir = "/workspace"
+    }
 
     trust $ export HOME="{home_dir}" $
 

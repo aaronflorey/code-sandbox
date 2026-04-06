@@ -161,7 +161,7 @@ setup_local_dirs__130_v0() {
     __status=$?
     chown -R "${user}:${user}" "${home_dir}/.local" "${home_dir}/.config" >/dev/null 2>&1
     __status=$?
-    chown "${user}:${user}" "${home_dir}/.cache" >/dev/null 2>&1
+    chown -R "${user}:${user}" "${home_dir}/.cache" >/dev/null 2>&1
     __status=$?
     dir_exists__39_v0 "/usr/local/install/global/node_modules/@just-every/code"
     ret_dir_exists39_v0__52_8="${ret_dir_exists39_v0}"
@@ -414,6 +414,9 @@ if [ "${__status}" != 0 ]; then
     :
 fi
 project_dir_7="${ret_env_var_get101_v0}"
+if [ "$([ "_${project_dir_7}" != "_" ]; echo $?)" != 0 ]; then
+    project_dir_7="/workspace"
+fi
 export HOME="${home_dir_6}"
 __status=$?
 setup_user__126_v0 "${host_uid_4}" "${host_gid_5}" "${home_dir_6}"
@@ -449,8 +452,8 @@ __status=$?
 export FORCE_COLOR=1
 __status=$?
 dir_exists__39_v0 "${project_dir_7}"
-ret_dir_exists39_v0__226_8="${ret_dir_exists39_v0}"
-if [ "${ret_dir_exists39_v0__226_8}" != 0 ]; then
+ret_dir_exists39_v0__229_8="${ret_dir_exists39_v0}"
+if [ "${ret_dir_exists39_v0__229_8}" != 0 ]; then
     cd "${project_dir_7}"
     __status=$?
 fi
