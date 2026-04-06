@@ -300,6 +300,9 @@ fun env_flags(): Text {
         let val = env_var_get(var) failed {
             continue
         }
+        if trim(val) == "" {
+            continue
+        }
         flags += " -e {var}={val}"
     }
 
@@ -312,7 +315,20 @@ fun env_flags(): Text {
             if trimmed == "" or starts_with(trimmed, "#") {
                 continue
             }
-            flags += " -e {trimmed}"
+
+            let has_equals = trust $ printf '%s' "{trimmed}" | grep -q "=" && echo "1" || echo "0" $
+            if trim(has_equals) != "1" {
+                continue
+            }
+
+            let key = trim(trust $ printf '%s' "{trimmed}" | cut -d= -f1 $)
+            let value = trim(trust $ printf '%s' "{trimmed}" | cut -d= -f2- $)
+
+            if key == "" or value == "" {
+                continue
+            }
+
+            flags += " -e {key}={value}"
         }
     }
 

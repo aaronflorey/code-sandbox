@@ -1,8 +1,11 @@
+# syntax=docker/dockerfile:1.7
 FROM ubuntu:25.10
 
 # 1. System packages + GitHub CLI
 ENV DEBIAN_FRONTEND=noninteractive
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
+    apt-get update && apt-get install -y --no-install-recommends \
       build-essential git git-lfs curl wget jq unzip zip sudo gosu \
       python3 python3-pip python3-venv \
       ripgrep fd-find tree sqlite3 shellcheck inotify-tools \
@@ -21,13 +24,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
       plocate autoconf bison gettext libgd-dev libcurl4-openssl-dev libedit-dev \
       libicu-dev libjpeg-dev libmysqlclient-dev libonig-dev libpng-dev libpq-dev \
       libreadline-dev libsqlite3-dev libssl-dev libxml2-dev libzip-dev \
-      re2c zlib1g-dev \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
+      re2c zlib1g-dev
 
 # 2. Node.js 24 (required for LLM agents)
-RUN curl -fsSL https://deb.nodesource.com/setup_24.x | bash - \
-    && apt-get install -y nodejs \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
+    curl -fsSL https://deb.nodesource.com/setup_24.x | bash - \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends nodejs
 
 # 3. Bun
 ENV BUN_INSTALL=/usr/local
