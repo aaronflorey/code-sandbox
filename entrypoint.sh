@@ -299,6 +299,10 @@ setup_mise_env__134_v0() {
     local home_dir=$1
     local project_dir=$2
     trusted_paths_19="${home_dir}:${home_dir}/.config/mise:${home_dir}/.config/mise/config.toml:${project_dir}:${project_dir}/.mise.toml:${project_dir}/mise.toml"
+    export XDG_CACHE_HOME="${home_dir}/.cache"
+    __status=$?
+    export MISE_CACHE_DIR="${home_dir}/.cache/mise"
+    __status=$?
     export MISE_GLOBAL_CONFIG_FILE="${home_dir}/.config/mise/config.toml"
     __status=$?
     export MISE_GLOBAL_CONFIG_ROOT="${home_dir}"
@@ -382,8 +386,8 @@ install_composer__137_v0() {
         php_available_26=0
     fi
     is_command__103_v0 "composer"
-    ret_is_command103_v0__186_30="${ret_is_command103_v0}"
-    if [ "$(( ${php_available_26} && $(( ! ${ret_is_command103_v0__186_30} )) ))" != 0 ]; then
+    ret_is_command103_v0__188_30="${ret_is_command103_v0}"
+    if [ "$(( ${php_available_26} && $(( ! ${ret_is_command103_v0__188_30} )) ))" != 0 ]; then
         echo "Installing Composer ..."
         gosu "${user}" env HOME="${home_dir}" curl -fsSL "https://getcomposer.org/download/latest-stable/composer.phar" -o "${home_dir}/.local/bin/composer"
         __status=$?
@@ -452,8 +456,8 @@ __status=$?
 export FORCE_COLOR=1
 __status=$?
 dir_exists__39_v0 "${project_dir_7}"
-ret_dir_exists39_v0__229_8="${ret_dir_exists39_v0}"
-if [ "${ret_dir_exists39_v0__229_8}" != 0 ]; then
+ret_dir_exists39_v0__231_8="${ret_dir_exists39_v0}"
+if [ "${ret_dir_exists39_v0__231_8}" != 0 ]; then
     cd "${project_dir_7}"
     __status=$?
 fi

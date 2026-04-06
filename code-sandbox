@@ -730,6 +730,7 @@ volume_flags__147_v0() {
     fi
     flags_87+=" -v code-sandbox-bun-cache:/home/code/.bun"
     flags_87+=" -v code-sandbox-mise-data:/workspace/.local/share/mise"
+    flags_87+=" -v code-sandbox-mise-cache:/workspace/.cache/mise"
     ret_volume_flags147_v0="${flags_87}"
     return 0
 }
@@ -1025,9 +1026,9 @@ do
     fi
     arg_17="${args_6[${i_16}]}"
     starts_with__23_v0 "${arg_17}" "--languages="
-    ret_starts_with23_v0__654_13="${ret_starts_with23_v0}"
+    ret_starts_with23_v0__655_13="${ret_starts_with23_v0}"
     starts_with__23_v0 "${arg_17}" "-"
-    ret_starts_with23_v0__662_13="${ret_starts_with23_v0}"
+    ret_starts_with23_v0__663_13="${ret_starts_with23_v0}"
     if [ "$([ "_${arg_17}" != "_--pull" ]; echo $?)" != 0 ]; then
         do_pull_7=1
     elif [ "$([ "_${arg_17}" != "_--build" ]; echo $?)" != 0 ]; then
@@ -1049,7 +1050,7 @@ do
         fi
         i_16="$(( ${i_16} + 1 ))"
         languages_13="${args_6[${i_16}]}"
-    elif [ "${ret_starts_with23_v0__654_13}" != 0 ]; then
+    elif [ "${ret_starts_with23_v0__655_13}" != 0 ]; then
         command_52="$(echo "${arg_17}" | cut -d= -f2-)"
         __status=$?
         languages_13="${command_52}"
@@ -1058,7 +1059,7 @@ do
         pass_args_14="${ret_collect_args149_v0}"
         explicit_cmd_15=1
         break
-    elif [ "${ret_starts_with23_v0__662_13}" != 0 ]; then
+    elif [ "${ret_starts_with23_v0__663_13}" != 0 ]; then
         echo "Error: Unknown option: ${arg_17}"
         echo "Use --help for usage."
         exit 1
@@ -1101,8 +1102,8 @@ state_59="${ret_get_container_state153_v0}"
 if [ "$([ "_${state_59}" != "_running" ]; echo $?)" != 0 ]; then
     echo "Attaching to running container ${cname_56} ..."
     resolve_cmd__150_v0 "${shell_mode_10}" "${explicit_cmd_15}" "${pass_args_14}"
-    ret_resolve_cmd150_v0__700_42="${ret_resolve_cmd150_v0}"
-    apply_skip_permissions__152_v0 "${ret_resolve_cmd150_v0__700_42}" "${skip_permissions_11}"
+    ret_resolve_cmd150_v0__701_42="${ret_resolve_cmd150_v0}"
+    apply_skip_permissions__152_v0 "${ret_resolve_cmd150_v0__701_42}" "${skip_permissions_11}"
     cmd_62="${ret_apply_skip_permissions152_v0}"
     exec docker exec -it -e TERM=xterm-256color -e COLORTERM=truecolor -e FORCE_COLOR=1 "${cname_56}" gosu code ${cmd_62}
     __status=$?
@@ -1120,8 +1121,8 @@ if [ "$([ "_${languages_13}" != "___prompt__" ]; echo $?)" != 0 ]; then
     languages_13="${ret_select_languages145_v0}"
 fi
 resolve_cmd__150_v0 "${shell_mode_10}" "${explicit_cmd_15}" "${pass_args_14}"
-ret_resolve_cmd150_v0__713_38="${ret_resolve_cmd150_v0}"
-apply_skip_permissions__152_v0 "${ret_resolve_cmd150_v0__713_38}" "${skip_permissions_11}"
+ret_resolve_cmd150_v0__714_38="${ret_resolve_cmd150_v0}"
+apply_skip_permissions__152_v0 "${ret_resolve_cmd150_v0__714_38}" "${skip_permissions_11}"
 cmd_71="${ret_apply_skip_permissions152_v0}"
 # Build docker run command
 command_53="$(id -u)"

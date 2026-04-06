@@ -127,6 +127,8 @@ fun setup_code_symlink(home_dir: Text, user: Text): Null {
 
 fun setup_mise_env(home_dir: Text, project_dir: Text): Null {
     let trusted_paths = "{home_dir}:{home_dir}/.config/mise:{home_dir}/.config/mise/config.toml:{project_dir}:{project_dir}/.mise.toml:{project_dir}/mise.toml"
+    trust $ export XDG_CACHE_HOME="{home_dir}/.cache" $
+    trust $ export MISE_CACHE_DIR="{home_dir}/.cache/mise" $
     trust $ export MISE_GLOBAL_CONFIG_FILE="{home_dir}/.config/mise/config.toml" $
     trust $ export MISE_GLOBAL_CONFIG_ROOT="{home_dir}" $
     trust $ export MISE_TRUSTED_CONFIG_PATHS="{trusted_paths}" $
