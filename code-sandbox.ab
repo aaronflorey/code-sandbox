@@ -406,6 +406,7 @@ fun volume_flags(source_dir: Text, folder: Text, skip_permissions: Bool): Text {
 
     flags += " -v code-sandbox-bun-cache:/home/code/.bun"
     flags += " -v code-sandbox-mise-data:/workspace/.local/share/mise"
+    flags += " -v code-sandbox-mise-state:/workspace/.local/state/mise"
     flags += " -v code-sandbox-mise-cache:/workspace/.cache/mise"
 
     return flags

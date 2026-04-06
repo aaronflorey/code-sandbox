@@ -157,7 +157,7 @@ setup_git__129_v0() {
 setup_local_dirs__130_v0() {
     local home_dir=$1
     local user=$2
-    mkdir -p "${home_dir}/.local/share/mise" "${home_dir}/.local/bin" "${home_dir}/.config/mise" "${home_dir}/.config/composer" "${home_dir}/.cache/mise"
+    mkdir -p "${home_dir}/.local/share/mise" "${home_dir}/.local/state/mise" "${home_dir}/.local/bin" "${home_dir}/.config/mise" "${home_dir}/.config/composer" "${home_dir}/.cache/mise"
     __status=$?
     chown -R "${user}:${user}" "${home_dir}/.local" "${home_dir}/.config" >/dev/null 2>&1
     __status=$?
@@ -301,7 +301,11 @@ setup_mise_env__134_v0() {
     trusted_paths_19="${home_dir}:${home_dir}/.config/mise:${home_dir}/.config/mise/config.toml:${project_dir}:${project_dir}/.mise.toml:${project_dir}/mise.toml"
     export XDG_CACHE_HOME="${home_dir}/.cache"
     __status=$?
+    export XDG_STATE_HOME="${home_dir}/.local/state"
+    __status=$?
     export MISE_CACHE_DIR="${home_dir}/.cache/mise"
+    __status=$?
+    export MISE_STATE_DIR="${home_dir}/.local/state/mise"
     __status=$?
     export MISE_GLOBAL_CONFIG_FILE="${home_dir}/.config/mise/config.toml"
     __status=$?
@@ -386,8 +390,8 @@ install_composer__137_v0() {
         php_available_26=0
     fi
     is_command__103_v0 "composer"
-    ret_is_command103_v0__188_30="${ret_is_command103_v0}"
-    if [ "$(( ${php_available_26} && $(( ! ${ret_is_command103_v0__188_30} )) ))" != 0 ]; then
+    ret_is_command103_v0__190_30="${ret_is_command103_v0}"
+    if [ "$(( ${php_available_26} && $(( ! ${ret_is_command103_v0__190_30} )) ))" != 0 ]; then
         echo "Installing Composer ..."
         gosu "${user}" env HOME="${home_dir}" curl -fsSL "https://getcomposer.org/download/latest-stable/composer.phar" -o "${home_dir}/.local/bin/composer"
         __status=$?
@@ -456,8 +460,8 @@ __status=$?
 export FORCE_COLOR=1
 __status=$?
 dir_exists__39_v0 "${project_dir_7}"
-ret_dir_exists39_v0__231_8="${ret_dir_exists39_v0}"
-if [ "${ret_dir_exists39_v0__231_8}" != 0 ]; then
+ret_dir_exists39_v0__233_8="${ret_dir_exists39_v0}"
+if [ "${ret_dir_exists39_v0__233_8}" != 0 ]; then
     cd "${project_dir_7}"
     __status=$?
 fi

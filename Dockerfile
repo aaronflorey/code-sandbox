@@ -7,6 +7,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
     apt-get update && apt-get install -y --no-install-recommends \
       build-essential git git-lfs curl wget jq unzip zip sudo gosu \
+      locales \
       python3 python3-pip python3-venv \
       ripgrep fd-find tree sqlite3 shellcheck inotify-tools \
       ca-certificates gnupg2 openssh-client vim-tiny less \
@@ -25,6 +26,11 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
       libicu-dev libjpeg-dev libmysqlclient-dev libonig-dev libpng-dev libpq-dev \
       libreadline-dev libsqlite3-dev libssl-dev libxml2-dev libzip-dev \
       re2c zlib1g-dev
+
+RUN sed -i 's/^# *en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen \
+    && sed -i 's/^# *en_AU.UTF-8 UTF-8/en_AU.UTF-8 UTF-8/' /etc/locale.gen \
+    && locale-gen \
+    && update-locale LANG=en_US.UTF-8
 
 # 2. Node.js 24 (required for LLM agents)
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
@@ -56,6 +62,8 @@ COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
 ENV HOME=/workspace
+ENV LANG=en_US.UTF-8
+ENV LC_ALL=en_US.UTF-8
 RUN mkdir -p /workspace
 WORKDIR /workspace
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
