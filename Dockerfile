@@ -3,9 +3,7 @@ FROM ubuntu:25.10
 
 # 1. System packages + GitHub CLI
 ENV DEBIAN_FRONTEND=noninteractive
-RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
-    --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
-    apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get update && apt-get install -y --no-install-recommends \
       build-essential git git-lfs curl wget jq unzip zip sudo gosu \
       locales \
       python3 python3-pip python3-venv \
@@ -33,9 +31,7 @@ RUN sed -i 's/^# *en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen \
     && update-locale LANG=en_US.UTF-8
 
 # 2. Node.js 24 (required for LLM agents)
-RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
-    --mount=type=cache,target=/var/lib/apt/lists,sharing=locked \
-    curl -fsSL https://deb.nodesource.com/setup_24.x | bash - \
+RUN curl -fsSL https://deb.nodesource.com/setup_24.x | bash - \
     && apt-get update \
     && apt-get install -y --no-install-recommends nodejs
 
@@ -57,7 +53,14 @@ RUN bun install -g \
       @github/copilot \
       && rm -rf /tmp/*
 
-# 6. Entrypoint
+# 6. Install Bin
+RUN curl -fsSL https://raw.githubusercontent.com/aaronflorey/bin/master/install.sh | sh \
+  && bin install https://github.com/rtk-ai/rtk \
+  && bin install https://github.com/jesseduffield/lazygit \ 
+  && bin install https://github.com/burntsushi/ripgrep \ 
+  && bin install https://github.com/ast-grep/ast-grep
+
+# 7. Entrypoint
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 

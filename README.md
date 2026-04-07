@@ -27,8 +27,11 @@ The image is built via GitHub Actions and hosted on GHCR. You don't need to buil
 
 ```bash
 # Download just the launcher script
-sudo curl -fsSL https://raw.githubusercontent.com/aaronflorey/code-sandbox/main/code-sandbox -o /usr/local/bin/code-sandbox && \ 
- sudo chmod +x /usr/local/bin/code-sandbox
+curl -fsSL --retry 3 --retry-delay 2 \
+  -H "User-Agent: code-sandbox-installer" \
+  https://raw.githubusercontent.com/aaronflorey/code-sandbox/main/code-sandbox \
+  | sudo tee /usr/local/bin/code-sandbox >/dev/null
+sudo chmod +x /usr/local/bin/code-sandbox
 
 # Go to any project directory
 cd ~/projects/my-app
