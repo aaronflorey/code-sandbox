@@ -6,10 +6,10 @@
 split__5_v0() {
     local text=$1
     local delimiter=$2
-    result_66=()
-    IFS="${delimiter}" read -rd '' -a result_66 < <(printf %s "$text")
+    result_70=()
+    IFS="${delimiter}" read -rd '' -a result_70 < <(printf %s "$text")
     __status=$?
-    ret_split5_v0=("${result_66[@]}")
+    ret_split5_v0=("${result_70[@]}")
     return 0
 }
 
@@ -143,7 +143,7 @@ show_help__128_v0() {
     echo "  --pull                  Pull the latest pre-built Docker image"
     echo "  --update                Force an immediate update check before launch"
     echo "  --shell                 Open a bash shell (skip agent menu)"
-    echo "  --skip-permissions      Launch supported agents with their permission bypass flag"
+    echo "  --skip-permissions      Launch supported agents with their permission bypass mode"
     echo "  --languages <list>      Install mise languages (comma-separated)"
     echo "  --languages=<list>      Same as above"
     echo "  -h, --help              Show this help message"
@@ -437,9 +437,9 @@ csv_contains__141_v0() {
         return 0
     fi
     split__5_v0 "${csv}" ","
-    parts_67=("${ret_split5_v0[@]}")
-    for part_68 in "${parts_67[@]}"; do
-        trim__11_v0 "${part_68}"
+    parts_71=("${ret_split5_v0[@]}")
+    for part_72 in "${parts_71[@]}"; do
+        trim__11_v0 "${part_72}"
         ret_trim11_v0__207_12="${ret_trim11_v0}"
         if [ "$([ "_${ret_trim11_v0__207_12}" != "_${value}" ]; echo $?)" != 0 ]; then
             ret_csv_contains141_v0=1
@@ -472,8 +472,8 @@ marker_exists__143_v0() {
     local marker=$2
     command_31="$(find "${project_dir}" -maxdepth 2 -type f -name "${marker}" -print -quit 2>/dev/null)"
     __status=$?
-    found_65="${command_31}"
-    trim__11_v0 "${found_65}"
+    found_69="${command_31}"
+    trim__11_v0 "${found_69}"
     ret_trim11_v0__229_12="${ret_trim11_v0}"
     ret_marker_exists143_v0="$([ "_${ret_trim11_v0__229_12}" == "_" ]; echo $?)"
     return 0
@@ -481,32 +481,32 @@ marker_exists__143_v0() {
 
 detect_languages__144_v0() {
     local project_dir=$1
-    detected_64=""
+    detected_68=""
     marker_exists__143_v0 "${project_dir}" "composer.json"
     ret_marker_exists143_v0__235_8="${ret_marker_exists143_v0}"
     if [ "${ret_marker_exists143_v0__235_8}" != 0 ]; then
-        append_csv_unique__142_v0 "${detected_64}" "php"
-        detected_64="${ret_append_csv_unique142_v0}"
+        append_csv_unique__142_v0 "${detected_68}" "php"
+        detected_68="${ret_append_csv_unique142_v0}"
     fi
     marker_exists__143_v0 "${project_dir}" "go.mod"
     ret_marker_exists143_v0__238_8="${ret_marker_exists143_v0}"
     if [ "${ret_marker_exists143_v0__238_8}" != 0 ]; then
-        append_csv_unique__142_v0 "${detected_64}" "go"
-        detected_64="${ret_append_csv_unique142_v0}"
+        append_csv_unique__142_v0 "${detected_68}" "go"
+        detected_68="${ret_append_csv_unique142_v0}"
     fi
     marker_exists__143_v0 "${project_dir}" "Cargo.toml"
     ret_marker_exists143_v0__241_8="${ret_marker_exists143_v0}"
     if [ "${ret_marker_exists143_v0__241_8}" != 0 ]; then
-        append_csv_unique__142_v0 "${detected_64}" "rust"
-        detected_64="${ret_append_csv_unique142_v0}"
+        append_csv_unique__142_v0 "${detected_68}" "rust"
+        detected_68="${ret_append_csv_unique142_v0}"
     fi
     marker_exists__143_v0 "${project_dir}" "Gemfile"
     ret_marker_exists143_v0__244_8="${ret_marker_exists143_v0}"
     marker_exists__143_v0 "${project_dir}" "*.gemspec"
     ret_marker_exists143_v0__244_49="${ret_marker_exists143_v0}"
     if [ "$(( ${ret_marker_exists143_v0__244_8} || ${ret_marker_exists143_v0__244_49} ))" != 0 ]; then
-        append_csv_unique__142_v0 "${detected_64}" "ruby"
-        detected_64="${ret_append_csv_unique142_v0}"
+        append_csv_unique__142_v0 "${detected_68}" "ruby"
+        detected_68="${ret_append_csv_unique142_v0}"
     fi
     marker_exists__143_v0 "${project_dir}" "pom.xml"
     ret_marker_exists143_v0__247_8="${ret_marker_exists143_v0}"
@@ -515,8 +515,8 @@ detect_languages__144_v0() {
     marker_exists__143_v0 "${project_dir}" "build.gradle.kts"
     ret_marker_exists143_v0__247_95="${ret_marker_exists143_v0}"
     if [ "$(( $(( ${ret_marker_exists143_v0__247_8} || ${ret_marker_exists143_v0__247_49} )) || ${ret_marker_exists143_v0__247_95} ))" != 0 ]; then
-        append_csv_unique__142_v0 "${detected_64}" "java"
-        detected_64="${ret_append_csv_unique142_v0}"
+        append_csv_unique__142_v0 "${detected_68}" "java"
+        detected_68="${ret_append_csv_unique142_v0}"
     fi
     marker_exists__143_v0 "${project_dir}" "pyproject.toml"
     ret_marker_exists143_v0__250_8="${ret_marker_exists143_v0}"
@@ -527,52 +527,52 @@ detect_languages__144_v0() {
     marker_exists__143_v0 "${project_dir}" "Pipfile"
     ret_marker_exists143_v0__250_148="${ret_marker_exists143_v0}"
     if [ "$(( $(( $(( ${ret_marker_exists143_v0__250_8} || ${ret_marker_exists143_v0__250_56} )) || ${ret_marker_exists143_v0__250_106} )) || ${ret_marker_exists143_v0__250_148} ))" != 0 ]; then
-        append_csv_unique__142_v0 "${detected_64}" "python"
-        detected_64="${ret_append_csv_unique142_v0}"
+        append_csv_unique__142_v0 "${detected_68}" "python"
+        detected_68="${ret_append_csv_unique142_v0}"
     fi
     marker_exists__143_v0 "${project_dir}" "build.zig"
     ret_marker_exists143_v0__253_8="${ret_marker_exists143_v0}"
     if [ "${ret_marker_exists143_v0__253_8}" != 0 ]; then
-        append_csv_unique__142_v0 "${detected_64}" "zig"
-        detected_64="${ret_append_csv_unique142_v0}"
+        append_csv_unique__142_v0 "${detected_68}" "zig"
+        detected_68="${ret_append_csv_unique142_v0}"
     fi
     marker_exists__143_v0 "${project_dir}" "rebar.config"
     ret_marker_exists143_v0__256_8="${ret_marker_exists143_v0}"
     marker_exists__143_v0 "${project_dir}" "erlang.mk"
     ret_marker_exists143_v0__256_54="${ret_marker_exists143_v0}"
     if [ "$(( ${ret_marker_exists143_v0__256_8} || ${ret_marker_exists143_v0__256_54} ))" != 0 ]; then
-        append_csv_unique__142_v0 "${detected_64}" "erlang"
-        detected_64="${ret_append_csv_unique142_v0}"
+        append_csv_unique__142_v0 "${detected_68}" "erlang"
+        detected_68="${ret_append_csv_unique142_v0}"
     fi
     marker_exists__143_v0 "${project_dir}" "mix.exs"
     ret_marker_exists143_v0__259_8="${ret_marker_exists143_v0}"
     if [ "${ret_marker_exists143_v0__259_8}" != 0 ]; then
-        append_csv_unique__142_v0 "${detected_64}" "elixir"
-        detected_64="${ret_append_csv_unique142_v0}"
+        append_csv_unique__142_v0 "${detected_68}" "elixir"
+        detected_68="${ret_append_csv_unique142_v0}"
     fi
-    ret_detect_languages144_v0="${detected_64}"
+    ret_detect_languages144_v0="${detected_68}"
     return 0
 }
 
 select_languages__145_v0() {
     command_32="$(pwd)"
     __status=$?
-    pwd_63="${command_32}"
-    file_exists__37_v0 "${pwd_63}/.mise.toml"
+    pwd_67="${command_32}"
+    file_exists__37_v0 "${pwd_67}/.mise.toml"
     ret_file_exists37_v0__269_8="${ret_file_exists37_v0}"
-    file_exists__37_v0 "${pwd_63}/mise.toml"
+    file_exists__37_v0 "${pwd_67}/mise.toml"
     ret_file_exists37_v0__269_43="${ret_file_exists37_v0}"
-    dir_exists__36_v0 "${pwd_63}/.mise"
+    dir_exists__36_v0 "${pwd_67}/.mise"
     ret_dir_exists36_v0__269_77="${ret_dir_exists36_v0}"
     if [ "$(( $(( ${ret_file_exists37_v0__269_8} || ${ret_file_exists37_v0__269_43} )) || ${ret_dir_exists36_v0__269_77} ))" != 0 ]; then
         ret_select_languages145_v0="__mise_toml__"
         return 0
     fi
-    detect_languages__144_v0 "${pwd_63}"
-    detected_69="${ret_detect_languages144_v0}"
-    if [ "$([ "_${detected_69}" == "_" ]; echo $?)" != 0 ]; then
-        echo "Auto-detected languages from project files: ${detected_69}"
-        ret_select_languages145_v0="${detected_69}"
+    detect_languages__144_v0 "${pwd_67}"
+    detected_73="${ret_detect_languages144_v0}"
+    if [ "$([ "_${detected_73}" == "_" ]; echo $?)" != 0 ]; then
+        echo "Auto-detected languages from project files: ${detected_73}"
+        ret_select_languages145_v0="${detected_73}"
         return 0
     fi
     echo ""
@@ -580,71 +580,71 @@ select_languages__145_v0() {
     echo "  php  go  rust  ruby  java  python  zig  erlang  elixir"
     echo ""
     input_prompt__103_v0 "Languages: "
-    selection_70="${ret_input_prompt103_v0}"
-    ret_select_languages145_v0="${selection_70}"
+    selection_74="${ret_input_prompt103_v0}"
+    ret_select_languages145_v0="${selection_74}"
     return 0
 }
 
 env_flags__146_v0() {
-    flags_94=""
-    vars_95=("OPENAI_API_KEY" "OPENAI_BASE_URL" "OPENAI_ORG_ID" "ANTHROPIC_API_KEY" "ANTHROPIC_BASE_URL" "GOOGLE_API_KEY" "GEMINI_API_KEY" "GOOGLE_CLOUD_PROJECT" "GITHUB_TOKEN" "GH_TOKEN" "GROQ_API_KEY" "MISTRAL_API_KEY" "DEEPSEEK_API_KEY" "OPENROUTER_API_KEY" "AWS_ACCESS_KEY_ID" "AWS_SECRET_ACCESS_KEY" "AWS_SESSION_TOKEN" "AWS_REGION")
-    for var_96 in "${vars_95[@]}"; do
-        env_var_get__100_v0 "${var_96}"
+    flags_100=""
+    vars_101=("OPENAI_API_KEY" "OPENAI_BASE_URL" "OPENAI_ORG_ID" "ANTHROPIC_API_KEY" "ANTHROPIC_BASE_URL" "GOOGLE_API_KEY" "GEMINI_API_KEY" "GOOGLE_CLOUD_PROJECT" "GITHUB_TOKEN" "GH_TOKEN" "GROQ_API_KEY" "MISTRAL_API_KEY" "DEEPSEEK_API_KEY" "OPENROUTER_API_KEY" "AWS_ACCESS_KEY_ID" "AWS_SECRET_ACCESS_KEY" "AWS_SESSION_TOKEN" "AWS_REGION")
+    for var_102 in "${vars_101[@]}"; do
+        env_var_get__100_v0 "${var_102}"
         __status=$?
         if [ "${__status}" != 0 ]; then
             continue
         fi
-        val_97="${ret_env_var_get100_v0}"
-        trim__11_v0 "${val_97}"
+        val_103="${ret_env_var_get100_v0}"
+        trim__11_v0 "${val_103}"
         ret_trim11_v0__303_12="${ret_trim11_v0}"
         if [ "$([ "_${ret_trim11_v0__303_12}" != "_" ]; echo $?)" != 0 ]; then
             continue
         fi
-        flags_94+=" -e ${var_96}=${val_97}"
+        flags_100+=" -e ${var_102}=${val_103}"
     done
     command_34="$(pwd)"
     __status=$?
-    pwd_98="${command_34}"
-    file_exists__37_v0 "${pwd_98}/.env.sandbox"
+    pwd_104="${command_34}"
+    file_exists__37_v0 "${pwd_104}/.env.sandbox"
     ret_file_exists37_v0__310_8="${ret_file_exists37_v0}"
     if [ "${ret_file_exists37_v0__310_8}" != 0 ]; then
-        command_35="$(cat "${pwd_98}/.env.sandbox")"
+        command_35="$(cat "${pwd_104}/.env.sandbox")"
         __status=$?
-        content_99="${command_35}"
-        split__5_v0 "${content_99}" "
+        content_105="${command_35}"
+        split__5_v0 "${content_105}" "
 "
-        lines_100=("${ret_split5_v0[@]}")
-        for line_101 in "${lines_100[@]}"; do
-            trim__11_v0 "${line_101}"
-            trimmed_102="${ret_trim11_v0}"
-            starts_with__23_v0 "${trimmed_102}" "#"
+        lines_106=("${ret_split5_v0[@]}")
+        for line_107 in "${lines_106[@]}"; do
+            trim__11_v0 "${line_107}"
+            trimmed_108="${ret_trim11_v0}"
+            starts_with__23_v0 "${trimmed_108}" "#"
             ret_starts_with23_v0__315_33="${ret_starts_with23_v0}"
-            if [ "$(( $([ "_${trimmed_102}" != "_" ]; echo $?) || ${ret_starts_with23_v0__315_33} ))" != 0 ]; then
+            if [ "$(( $([ "_${trimmed_108}" != "_" ]; echo $?) || ${ret_starts_with23_v0__315_33} ))" != 0 ]; then
                 continue
             fi
-            command_36="$(printf '%s' "${trimmed_102}" | grep -q "=" && echo "1" || echo "0")"
+            command_36="$(printf '%s' "${trimmed_108}" | grep -q "=" && echo "1" || echo "0")"
             __status=$?
-            has_equals_103="${command_36}"
-            trim__11_v0 "${has_equals_103}"
+            has_equals_109="${command_36}"
+            trim__11_v0 "${has_equals_109}"
             ret_trim11_v0__320_16="${ret_trim11_v0}"
             if [ "$([ "_${ret_trim11_v0__320_16}" == "_1" ]; echo $?)" != 0 ]; then
                 continue
             fi
-            command_37="$(printf '%s' "${trimmed_102}" | cut -d= -f1)"
+            command_37="$(printf '%s' "${trimmed_108}" | cut -d= -f1)"
             __status=$?
             trim__11_v0 "${command_37}"
-            key_104="${ret_trim11_v0}"
-            command_38="$(printf '%s' "${trimmed_102}" | cut -d= -f2-)"
+            key_110="${ret_trim11_v0}"
+            command_38="$(printf '%s' "${trimmed_108}" | cut -d= -f2-)"
             __status=$?
             trim__11_v0 "${command_38}"
-            value_105="${ret_trim11_v0}"
-            if [ "$(( $([ "_${key_104}" != "_" ]; echo $?) || $([ "_${value_105}" != "_" ]; echo $?) ))" != 0 ]; then
+            value_111="${ret_trim11_v0}"
+            if [ "$(( $([ "_${key_110}" != "_" ]; echo $?) || $([ "_${value_111}" != "_" ]; echo $?) ))" != 0 ]; then
                 continue
             fi
-            flags_94+=" -e ${key_104}=${value_105}"
+            flags_100+=" -e ${key_110}=${value_111}"
         done
     fi
-    ret_env_flags146_v0="${flags_94}"
+    ret_env_flags146_v0="${flags_100}"
     return 0
 }
 
@@ -652,87 +652,87 @@ volume_flags__147_v0() {
     local source_dir=$1
     local folder=$2
     local skip_permissions=$3
-    flags_87=""
+    flags_93=""
     command_39="$(printenv HOME)"
     __status=$?
-    home_88="${command_39}"
-    shadow_root_89="/workspace/.sandbox-host-config"
-    flags_87+=" -v ${source_dir}:/workspace/${folder}"
-    config_dirs_90=(".codex" ".claude" ".gemini" ".opencode" ".code" ".copilot" ".agents")
-    for dir_91 in "${config_dirs_90[@]}"; do
-        dir_exists__36_v0 "${home_88}/${dir_91}"
+    home_94="${command_39}"
+    shadow_root_95="/workspace/.sandbox-host-config"
+    flags_93+=" -v ${source_dir}:/workspace/${folder}"
+    config_dirs_96=(".codex" ".claude" ".gemini" ".opencode" ".code" ".copilot" ".agents")
+    for dir_97 in "${config_dirs_96[@]}"; do
+        dir_exists__36_v0 "${home_94}/${dir_97}"
         ret_dir_exists36_v0__347_12="${ret_dir_exists36_v0}"
         if [ "${ret_dir_exists36_v0__347_12}" != 0 ]; then
             if [ "${skip_permissions}" != 0 ]; then
-                flags_87+=" -v ${home_88}/${dir_91}:${shadow_root_89}/${dir_91}:ro"
+                flags_93+=" -v ${home_94}/${dir_97}:${shadow_root_95}/${dir_97}:ro"
             else
-                flags_87+=" -v ${home_88}/${dir_91}:/workspace/${dir_91}"
+                flags_93+=" -v ${home_94}/${dir_97}:/workspace/${dir_97}"
             fi
         fi
     done
-    dir_exists__36_v0 "${home_88}/.config/opencode"
+    dir_exists__36_v0 "${home_94}/.config/opencode"
     ret_dir_exists36_v0__356_8="${ret_dir_exists36_v0}"
     if [ "${ret_dir_exists36_v0__356_8}" != 0 ]; then
         if [ "${skip_permissions}" != 0 ]; then
-            flags_87+=" -v ${home_88}/.config/opencode:${shadow_root_89}/.config/opencode:ro"
+            flags_93+=" -v ${home_94}/.config/opencode:${shadow_root_95}/.config/opencode:ro"
         else
-            flags_87+=" -v ${home_88}/.config/opencode:/workspace/.config/opencode"
+            flags_93+=" -v ${home_94}/.config/opencode:/workspace/.config/opencode"
         fi
     fi
-    dir_exists__36_v0 "${home_88}/.cache/opencode"
+    dir_exists__36_v0 "${home_94}/.cache/opencode"
     ret_dir_exists36_v0__364_8="${ret_dir_exists36_v0}"
     if [ "${ret_dir_exists36_v0__364_8}" != 0 ]; then
         if [ "${skip_permissions}" != 0 ]; then
-            flags_87+=" -v ${home_88}/.cache/opencode:${shadow_root_89}/.cache/opencode:ro"
+            flags_93+=" -v ${home_94}/.cache/opencode:${shadow_root_95}/.cache/opencode:ro"
         else
-            flags_87+=" -v ${home_88}/.cache/opencode:/workspace/.cache/opencode"
+            flags_93+=" -v ${home_94}/.cache/opencode:/workspace/.cache/opencode"
         fi
     fi
-    dir_exists__36_v0 "${home_88}/.local/share/opencode"
+    dir_exists__36_v0 "${home_94}/.local/share/opencode"
     ret_dir_exists36_v0__372_8="${ret_dir_exists36_v0}"
     if [ "${ret_dir_exists36_v0__372_8}" != 0 ]; then
         if [ "${skip_permissions}" != 0 ]; then
-            flags_87+=" -v ${home_88}/.local/share/opencode:${shadow_root_89}/.local/share/opencode:ro"
+            flags_93+=" -v ${home_94}/.local/share/opencode:${shadow_root_95}/.local/share/opencode:ro"
         else
-            flags_87+=" -v ${home_88}/.local/share/opencode:/workspace/.local/share/opencode"
+            flags_93+=" -v ${home_94}/.local/share/opencode:/workspace/.local/share/opencode"
         fi
     fi
-    dir_exists__36_v0 "${home_88}/.local/state/opencode"
+    dir_exists__36_v0 "${home_94}/.local/state/opencode"
     ret_dir_exists36_v0__380_8="${ret_dir_exists36_v0}"
     if [ "${ret_dir_exists36_v0__380_8}" != 0 ]; then
         if [ "${skip_permissions}" != 0 ]; then
-            flags_87+=" -v ${home_88}/.local/state/opencode:${shadow_root_89}/.local/state/opencode:ro"
+            flags_93+=" -v ${home_94}/.local/state/opencode:${shadow_root_95}/.local/state/opencode:ro"
         else
-            flags_87+=" -v ${home_88}/.local/state/opencode:/workspace/.local/state/opencode"
+            flags_93+=" -v ${home_94}/.local/state/opencode:/workspace/.local/state/opencode"
         fi
     fi
-    config_files_92=(".claude.json")
-    for file_93 in "${config_files_92[@]}"; do
-        file_exists__37_v0 "${home_88}/${file_93}"
+    config_files_98=(".claude.json")
+    for file_99 in "${config_files_98[@]}"; do
+        file_exists__37_v0 "${home_94}/${file_99}"
         ret_file_exists37_v0__390_12="${ret_file_exists37_v0}"
         if [ "${ret_file_exists37_v0__390_12}" != 0 ]; then
             if [ "${skip_permissions}" != 0 ]; then
-                flags_87+=" -v ${home_88}/${file_93}:${shadow_root_89}/${file_93}:ro"
+                flags_93+=" -v ${home_94}/${file_99}:${shadow_root_95}/${file_99}:ro"
             else
-                flags_87+=" -v ${home_88}/${file_93}:/workspace/${file_93}"
+                flags_93+=" -v ${home_94}/${file_99}:/workspace/${file_99}"
             fi
         fi
     done
-    dir_exists__36_v0 "${home_88}/.ssh"
+    dir_exists__36_v0 "${home_94}/.ssh"
     ret_dir_exists36_v0__399_8="${ret_dir_exists36_v0}"
     if [ "${ret_dir_exists36_v0__399_8}" != 0 ]; then
-        flags_87+=" -v ${home_88}/.ssh:/workspace/.ssh:ro"
+        flags_93+=" -v ${home_94}/.ssh:/workspace/.ssh:ro"
     fi
-    file_exists__37_v0 "${home_88}/.gitconfig"
+    file_exists__37_v0 "${home_94}/.gitconfig"
     ret_file_exists37_v0__403_8="${ret_file_exists37_v0}"
     if [ "${ret_file_exists37_v0__403_8}" != 0 ]; then
-        flags_87+=" -v ${home_88}/.gitconfig:/workspace/.gitconfig:ro"
+        flags_93+=" -v ${home_94}/.gitconfig:/workspace/.gitconfig:ro"
     fi
-    flags_87+=" -v code-sandbox-bun-cache:/home/code/.bun"
-    flags_87+=" -v code-sandbox-mise-data:/workspace/.local/share/mise"
-    flags_87+=" -v code-sandbox-mise-state:/workspace/.local/state/mise"
-    flags_87+=" -v code-sandbox-mise-cache:/workspace/.cache/mise"
-    ret_volume_flags147_v0="${flags_87}"
+    flags_93+=" -v code-sandbox-bun-cache:/home/code/.bun"
+    flags_93+=" -v code-sandbox-mise-data:/workspace/.local/share/mise"
+    flags_93+=" -v code-sandbox-mise-state:/workspace/.local/state/mise"
+    flags_93+=" -v code-sandbox-mise-cache:/workspace/.cache/mise"
+    ret_volume_flags147_v0="${flags_93}"
     return 0
 }
 
@@ -819,78 +819,114 @@ resolve_cmd__150_v0() {
     return 0
 }
 
-skip_permissions_flag__151_v0() {
+command_name__151_v0() {
+    local cmd=$1
+    trim__11_v0 "${cmd}"
+    normalized_64="${ret_trim11_v0}"
+    if [ "$([ "_${normalized_64}" != "_" ]; echo $?)" != 0 ]; then
+        ret_command_name151_v0=""
+        return 0
+    fi
+    command_43="$(printf '%s' "${normalized_64}" | cut -d' ' -f1)"
+    __status=$?
+    trim__11_v0 "${command_43}"
+    ret_command_name151_v0="${ret_trim11_v0}"
+    return 0
+}
+
+skip_permissions_flag__152_v0() {
     local cmd=$1
     if [ "$([ "_${cmd}" != "_claude" ]; echo $?)" != 0 ]; then
-        ret_skip_permissions_flag151_v0=" --dangerously-skip-permissions"
+        ret_skip_permissions_flag152_v0=" --dangerously-skip-permissions"
         return 0
     elif [ "$([ "_${cmd}" != "_codex" ]; echo $?)" != 0 ]; then
-        ret_skip_permissions_flag151_v0=" --dangerously-bypass-approvals-and-sandbox"
+        ret_skip_permissions_flag152_v0=" --dangerously-bypass-approvals-and-sandbox"
         return 0
     elif [ "$([ "_${cmd}" != "_gemini" ]; echo $?)" != 0 ]; then
-        ret_skip_permissions_flag151_v0=" --yolo"
+        ret_skip_permissions_flag152_v0=" --yolo"
         return 0
     elif [ "$([ "_${cmd}" != "_copilot" ]; echo $?)" != 0 ]; then
-        ret_skip_permissions_flag151_v0=" --allow-all-tools"
+        ret_skip_permissions_flag152_v0=" --allow-all-tools"
         return 0
     elif [ "$([ "_${cmd}" != "_code" ]; echo $?)" != 0 ]; then
-        ret_skip_permissions_flag151_v0=" --no-approval"
+        ret_skip_permissions_flag152_v0=" --no-approval"
         return 0
     else
-        ret_skip_permissions_flag151_v0=""
+        ret_skip_permissions_flag152_v0=""
         return 0
     fi
 }
 
-apply_skip_permissions__152_v0() {
+apply_skip_permissions__153_v0() {
     local cmd=$1
     local skip_permissions=$2
     if [ "$(( ! ${skip_permissions} ))" != 0 ]; then
-        ret_apply_skip_permissions152_v0="${cmd}"
+        ret_apply_skip_permissions153_v0="${cmd}"
         return 0
     fi
-    skip_permissions_flag__151_v0 "${cmd}"
-    flag_61="${ret_skip_permissions_flag151_v0}"
-    if [ "$([ "_${flag_61}" != "_" ]; echo $?)" != 0 ]; then
-        ret_apply_skip_permissions152_v0="${cmd}"
+    skip_permissions_flag__152_v0 "${cmd}"
+    flag_62="${ret_skip_permissions_flag152_v0}"
+    if [ "$([ "_${flag_62}" != "_" ]; echo $?)" != 0 ]; then
+        ret_apply_skip_permissions153_v0="${cmd}"
         return 0
     fi
-    ret_apply_skip_permissions152_v0="${cmd}${flag_61}"
+    ret_apply_skip_permissions153_v0="${cmd}${flag_62}"
     return 0
 }
 
-get_container_state__153_v0() {
+opencode_permission_env_arg__154_v0() {
+    local skip_permissions=$1
+    local cmd=$2
+    if [ "$(( ! ${skip_permissions} ))" != 0 ]; then
+        ret_opencode_permission_env_arg154_v0=""
+        return 0
+    fi
+    command_name__151_v0 "${cmd}"
+    ret_command_name151_v0__512_8="${ret_command_name151_v0}"
+    if [ "$([ "_${ret_command_name151_v0__512_8}" == "_opencode" ]; echo $?)" != 0 ]; then
+        ret_opencode_permission_env_arg154_v0=""
+        return 0
+    fi
+    command_44="$(printf '\173"*":"allow","external_directory":\173"*":"deny","~/.**":"allow","~/.*/**":"allow"\175,"edit":\173"~/.**":"deny","~/.*/**":"deny"\175\175')"
+    __status=$?
+    trim__11_v0 "${command_44}"
+    permissions_json_65="${ret_trim11_v0}"
+    ret_opencode_permission_env_arg154_v0=" -e OPENCODE_PERMISSION='${permissions_json_65}'"
+    return 0
+}
+
+get_container_state__155_v0() {
     local cname=$1
-    command_43="$(docker inspect "${cname}" 2>/dev/null)"
+    command_45="$(docker inspect "${cname}" 2>/dev/null)"
     __status=$?
     if [ "${__status}" != 0 ]; then
-        ret_get_container_state153_v0="none"
+        ret_get_container_state155_v0="none"
         return 0
     fi
-    json_57="${command_43}"
-    command_44="$(echo "${json_57}" | jq -r ".[0].State.Status")"
+    json_57="${command_45}"
+    command_46="$(echo "${json_57}" | jq -r ".[0].State.Status")"
     __status=$?
-    state_58="${command_44}"
+    state_58="${command_46}"
     trim__11_v0 "${state_58}"
-    ret_get_container_state153_v0="${ret_trim11_v0}"
+    ret_get_container_state155_v0="${ret_trim11_v0}"
     return 0
 }
 
-sandbox_setup__154_v0() {
+sandbox_setup__156_v0() {
     local pwd=$1
     local folder=$2
     git -C "${pwd}" rev-parse --is-inside-work-tree >/dev/null 2>&1
     __status=$?
     if [ "${__status}" != 0 ]; then
-        ret_sandbox_setup154_v0=""
+        ret_sandbox_setup156_v0=""
         return 0
     fi
-    command_45="$(date +%Y%m%d-%H%M%S)"
+    command_47="$(date +%Y%m%d-%H%M%S)"
     __status=$?
-    timestamp_78="${command_45}"
-    sandbox_dir_79="/tmp/code-sandbox/${folder}-${timestamp_78}"
-    rpad__29_v0 "${sandbox_dir_79}" " " 55
-    padded_80="${ret_rpad29_v0}"
+    timestamp_84="${command_47}"
+    sandbox_dir_85="/tmp/code-sandbox/${folder}-${timestamp_84}"
+    rpad__29_v0 "${sandbox_dir_85}" " " 55
+    padded_86="${ret_rpad29_v0}"
     echo ""
     echo "┌─────────────────────────────────────────────────────────────────┐"
     echo "│  🛡️  Safe Mode: isolated sandbox workspace                       │"
@@ -899,52 +935,52 @@ sandbox_setup__154_v0() {
     echo "│  of your project — your workspace files stay untouched until    │"
     echo "│  you decide what to do when the session ends.                   │"
     echo "│                                                                  │"
-    echo "│  Sandbox : ${padded_80}│"
+    echo "│  Sandbox : ${padded_86}│"
     echo "│  On exit : you will be asked what to do with any changes.       │"
     echo "└─────────────────────────────────────────────────────────────────┘"
     echo ""
     mkdir -p /tmp/code-sandbox
     __status=$?
-    git clone --quiet "${pwd}" "${sandbox_dir_79}"
+    git clone --quiet "${pwd}" "${sandbox_dir_85}"
     __status=$?
     if [ "${__status}" != 0 ]; then
         echo "Warning: git clone failed — using direct workspace."
         echo ""
-        ret_sandbox_setup154_v0=""
+        ret_sandbox_setup156_v0=""
         return 0
     fi
-    rsync -a --exclude=.git "${pwd}/" "${sandbox_dir_79}/"
+    rsync -a --exclude=.git "${pwd}/" "${sandbox_dir_85}/"
     __status=$?
-    git -C "${sandbox_dir_79}" remote set-url origin "${pwd}" >/dev/null 2>&1
+    git -C "${sandbox_dir_85}" remote set-url origin "${pwd}" >/dev/null 2>&1
     __status=$?
     # Commit any pre-existing dirty state as a baseline so the agent's work
     # lands in a separate, clean commit — useful for option C (branch push).
-    has_diff_81=0
-    git -C "${sandbox_dir_79}" diff --quiet >/dev/null 2>&1
+    has_diff_87=0
+    git -C "${sandbox_dir_85}" diff --quiet >/dev/null 2>&1
     __status=$?
     if [ "${__status}" != 0 ]; then
-        has_diff_81=1
+        has_diff_87=1
     fi
-    has_cached_82=0
-    git -C "${sandbox_dir_79}" diff --cached --quiet >/dev/null 2>&1
+    has_cached_88=0
+    git -C "${sandbox_dir_85}" diff --cached --quiet >/dev/null 2>&1
     __status=$?
     if [ "${__status}" != 0 ]; then
-        has_cached_82=1
+        has_cached_88=1
     fi
-    command_46="$(git -C "${sandbox_dir_79}" ls-files --others --exclude-standard)"
+    command_48="$(git -C "${sandbox_dir_85}" ls-files --others --exclude-standard)"
     __status=$?
-    untracked_83="${command_46}"
-    if [ "$(( $(( ${has_diff_81} || ${has_cached_82} )) || $([ "_${untracked_83}" == "_" ]; echo $?) ))" != 0 ]; then
-        git -C "${sandbox_dir_79}" add -A
+    untracked_89="${command_48}"
+    if [ "$(( $(( ${has_diff_87} || ${has_cached_88} )) || $([ "_${untracked_89}" == "_" ]; echo $?) ))" != 0 ]; then
+        git -C "${sandbox_dir_85}" add -A
         __status=$?
-        git -C "${sandbox_dir_79}" commit -m "pre-sandbox: uncommitted host changes" --quiet >/dev/null 2>&1
+        git -C "${sandbox_dir_85}" commit -m "pre-sandbox: uncommitted host changes" --quiet >/dev/null 2>&1
         __status=$?
     fi
-    ret_sandbox_setup154_v0="${sandbox_dir_79}"
+    ret_sandbox_setup156_v0="${sandbox_dir_85}"
     return 0
 }
 
-sandbox_exit__155_v0() {
+sandbox_exit__157_v0() {
     local sandbox_dir=$1
     local project_dir=$2
     echo ""
@@ -957,26 +993,26 @@ sandbox_exit__155_v0() {
     echo "│  D) Discard — leave workspace exactly as it was                 │"
     echo "└─────────────────────────────────────────────────────────────────┘"
     echo ""
-    command_47="$(if [ -t 0 ]; then read -r -p "Choice [A/B/C/D]: " _c </dev/tty 2>/dev/tty || _c="D"; else _c="D"; fi; echo "$_c")"
+    command_49="$(if [ -t 0 ]; then read -r -p "Choice [A/B/C/D]: " _c </dev/tty 2>/dev/tty || _c="D"; else _c="D"; fi; echo "$_c")"
     __status=$?
-    choice_108="${command_47}"
-    uppercase__13_v0 "${choice_108}"
-    choice_upper_109="${ret_uppercase13_v0}"
-    if [ "$([ "_${choice_upper_109}" != "_A" ]; echo $?)" != 0 ]; then
+    choice_114="${command_49}"
+    uppercase__13_v0 "${choice_114}"
+    choice_upper_115="${ret_uppercase13_v0}"
+    if [ "$([ "_${choice_upper_115}" != "_A" ]; echo $?)" != 0 ]; then
         echo "→ Copying sandbox changes to workspace (additive)..."
         rsync -a --exclude=.git "${sandbox_dir}/" "${project_dir}/"
         __status=$?
         echo "✓ Done."
-    elif [ "$([ "_${choice_upper_109}" != "_B" ]; echo $?)" != 0 ]; then
+    elif [ "$([ "_${choice_upper_115}" != "_B" ]; echo $?)" != 0 ]; then
         echo "→ Mirroring sandbox to workspace (adds + deletes)..."
         rsync -a --delete --exclude=.git "${sandbox_dir}/" "${project_dir}/"
         __status=$?
         echo "✓ Done."
-    elif [ "$([ "_${choice_upper_109}" != "_C" ]; echo $?)" != 0 ]; then
-        command_48="$(echo "sandbox/$(date +%Y%m%d-%H%M%S)")"
+    elif [ "$([ "_${choice_upper_115}" != "_C" ]; echo $?)" != 0 ]; then
+        command_50="$(echo "sandbox/$(date +%Y%m%d-%H%M%S)")"
         __status=$?
-        branch_110="${command_48}"
-        echo "→ Creating branch ${branch_110}..."
+        branch_116="${command_50}"
+        echo "→ Creating branch ${branch_116}..."
         git -C "${sandbox_dir}" add -A
         __status=$?
         git -C "${sandbox_dir}" diff --cached --quiet >/dev/null 2>&1
@@ -985,20 +1021,20 @@ sandbox_exit__155_v0() {
             git -C "${sandbox_dir}" commit -m "sandbox: agent changes" --quiet
             __status=$?
         fi
-        push_failed_111=0
-        git -C "${sandbox_dir}" push origin "HEAD:refs/heads/${branch_110}" --quiet
+        push_failed_117=0
+        git -C "${sandbox_dir}" push origin "HEAD:refs/heads/${branch_116}" --quiet
         __status=$?
         if [ "${__status}" != 0 ]; then
-            push_failed_111=1
+            push_failed_117=1
         fi
-        if [ "${push_failed_111}" != 0 ]; then
+        if [ "${push_failed_117}" != 0 ]; then
             echo "✗ Branch push failed — falling back to additive rsync..."
             rsync -a --exclude=.git "${sandbox_dir}/" "${project_dir}/"
             __status=$?
             echo "✓ Changes copied to workspace instead."
         else
-            echo "✓ Branch '${branch_110}' created in workspace."
-            echo "  Switch to it with: git checkout ${branch_110}"
+            echo "✓ Branch '${branch_116}' created in workspace."
+            echo "  Switch to it with: git checkout ${branch_116}"
         fi
     else
         echo "→ Workspace unchanged."
@@ -1021,15 +1057,15 @@ explicit_cmd_15=0
 i_16=1
 while :
 do
-    __length_50=("${args_6[@]}")
-    if [ "$(( ${i_16} >= ${#__length_50[@]} ))" != 0 ]; then
+    __length_52=("${args_6[@]}")
+    if [ "$(( ${i_16} >= ${#__length_52[@]} ))" != 0 ]; then
         break
     fi
     arg_17="${args_6[${i_16}]}"
     starts_with__23_v0 "${arg_17}" "--languages="
-    ret_starts_with23_v0__656_13="${ret_starts_with23_v0}"
+    ret_starts_with23_v0__677_13="${ret_starts_with23_v0}"
     starts_with__23_v0 "${arg_17}" "-"
-    ret_starts_with23_v0__664_13="${ret_starts_with23_v0}"
+    ret_starts_with23_v0__685_13="${ret_starts_with23_v0}"
     if [ "$([ "_${arg_17}" != "_--pull" ]; echo $?)" != 0 ]; then
         do_pull_7=1
     elif [ "$([ "_${arg_17}" != "_--build" ]; echo $?)" != 0 ]; then
@@ -1043,24 +1079,24 @@ do
     elif [ "$(( $([ "_${arg_17}" != "_--help" ]; echo $?) || $([ "_${arg_17}" != "_-h" ]; echo $?) ))" != 0 ]; then
         help_mode_12=1
     elif [ "$([ "_${arg_17}" != "_--languages" ]; echo $?)" != 0 ]; then
-        __length_51=("${args_6[@]}")
-        if [ "$(( $(( ${i_16} + 1 )) >= ${#__length_51[@]} ))" != 0 ]; then
+        __length_53=("${args_6[@]}")
+        if [ "$(( $(( ${i_16} + 1 )) >= ${#__length_53[@]} ))" != 0 ]; then
             echo "Error: --languages requires a value."
             echo "Use --help for usage."
             exit 1
         fi
         i_16="$(( ${i_16} + 1 ))"
         languages_13="${args_6[${i_16}]}"
-    elif [ "${ret_starts_with23_v0__656_13}" != 0 ]; then
-        command_52="$(echo "${arg_17}" | cut -d= -f2-)"
+    elif [ "${ret_starts_with23_v0__677_13}" != 0 ]; then
+        command_54="$(echo "${arg_17}" | cut -d= -f2-)"
         __status=$?
-        languages_13="${command_52}"
+        languages_13="${command_54}"
     elif [ "$([ "_${arg_17}" != "_--" ]; echo $?)" != 0 ]; then
         collect_args__149_v0 args_6[@] "$(( ${i_16} + 1 ))"
         pass_args_14="${ret_collect_args149_v0}"
         explicit_cmd_15=1
         break
-    elif [ "${ret_starts_with23_v0__664_13}" != 0 ]; then
+    elif [ "${ret_starts_with23_v0__685_13}" != 0 ]; then
         echo "Error: Unknown option: ${arg_17}"
         echo "Use --help for usage."
         exit 1
@@ -1098,15 +1134,17 @@ else
 fi
 container_name__140_v0 
 cname_56="${ret_container_name140_v0}"
-get_container_state__153_v0 "${cname_56}"
-state_59="${ret_get_container_state153_v0}"
+get_container_state__155_v0 "${cname_56}"
+state_59="${ret_get_container_state155_v0}"
 if [ "$([ "_${state_59}" != "_running" ]; echo $?)" != 0 ]; then
     echo "Attaching to running container ${cname_56} ..."
     resolve_cmd__150_v0 "${shell_mode_10}" "${explicit_cmd_15}" "${pass_args_14}"
-    ret_resolve_cmd150_v0__702_42="${ret_resolve_cmd150_v0}"
-    apply_skip_permissions__152_v0 "${ret_resolve_cmd150_v0__702_42}" "${skip_permissions_11}"
-    cmd_62="${ret_apply_skip_permissions152_v0}"
-    exec docker exec -it -e TERM=xterm-256color -e COLORTERM=truecolor -e FORCE_COLOR=1 "${cname_56}" gosu code ${cmd_62}
+    resolved_cmd_61="${ret_resolve_cmd150_v0}"
+    apply_skip_permissions__153_v0 "${resolved_cmd_61}" "${skip_permissions_11}"
+    cmd_63="${ret_apply_skip_permissions153_v0}"
+    opencode_permission_env_arg__154_v0 "${skip_permissions_11}" "${resolved_cmd_61}"
+    opencode_permission_env_66="${ret_opencode_permission_env_arg154_v0}"
+    exec docker exec -it -e TERM=xterm-256color -e COLORTERM=truecolor -e FORCE_COLOR=1${opencode_permission_env_66} "${cname_56}" gosu code ${cmd_63}
     __status=$?
     if [ "${__status}" != 0 ]; then
         exit "${__status}"
@@ -1122,69 +1160,72 @@ if [ "$([ "_${languages_13}" != "___prompt__" ]; echo $?)" != 0 ]; then
     languages_13="${ret_select_languages145_v0}"
 fi
 resolve_cmd__150_v0 "${shell_mode_10}" "${explicit_cmd_15}" "${pass_args_14}"
-ret_resolve_cmd150_v0__715_38="${ret_resolve_cmd150_v0}"
-apply_skip_permissions__152_v0 "${ret_resolve_cmd150_v0__715_38}" "${skip_permissions_11}"
-cmd_71="${ret_apply_skip_permissions152_v0}"
+resolved_cmd_75="${ret_resolve_cmd150_v0}"
+apply_skip_permissions__153_v0 "${resolved_cmd_75}" "${skip_permissions_11}"
+cmd_76="${ret_apply_skip_permissions153_v0}"
+opencode_permission_env_arg__154_v0 "${skip_permissions_11}" "${resolved_cmd_75}"
+opencode_permission_env_77="${ret_opencode_permission_env_arg154_v0}"
 # Build docker run command
-command_53="$(id -u)"
+command_55="$(id -u)"
 __status=$?
-host_uid_72="${command_53}"
-command_54="$(id -g)"
+host_uid_78="${command_55}"
+command_56="$(id -g)"
 __status=$?
-host_gid_73="${command_54}"
-term_74="xterm-256color"
-command_55="$(pwd -P)"
+host_gid_79="${command_56}"
+term_80="xterm-256color"
+command_57="$(pwd -P)"
 __status=$?
-pwd_75="${command_55}"
-command_56="$(basename "${pwd_75}")"
+pwd_81="${command_57}"
+command_58="$(basename "${pwd_81}")"
 __status=$?
-folder_76="${command_56}"
-project_dir_77="/workspace/${folder_76}"
+folder_82="${command_58}"
+project_dir_83="/workspace/${folder_82}"
 # Set up sandbox on the host before starting the container.
 # The sandbox dir is mounted in place of the real project, so even
 # a destructive agent command cannot touch the original workspace.
-sandbox_setup__154_v0 "${pwd_75}" "${folder_76}"
-sandbox_dir_84="${ret_sandbox_setup154_v0}"
-source_dir_85="${pwd_75}"
-if [ "$([ "_${sandbox_dir_84}" == "_" ]; echo $?)" != 0 ]; then
-    source_dir_85="${sandbox_dir_84}"
+sandbox_setup__156_v0 "${pwd_81}" "${folder_82}"
+sandbox_dir_90="${ret_sandbox_setup156_v0}"
+source_dir_91="${pwd_81}"
+if [ "$([ "_${sandbox_dir_90}" == "_" ]; echo $?)" != 0 ]; then
+    source_dir_91="${sandbox_dir_90}"
 fi
-run_cmd_86="docker run -it --rm"
-run_cmd_86+=" --name ${cname_56}"
-run_cmd_86+=" --hostname code-sandbox"
-run_cmd_86+=" -w ${project_dir_77}"
-run_cmd_86+=" --network bridge"
-run_cmd_86+=" --tmpfs /tmp:exec,size=2g"
-run_cmd_86+=" --security-opt=no-new-privileges"
-run_cmd_86+=" --pids-limit=500"
-run_cmd_86+=" --log-driver=local --log-opt max-size=10m"
-run_cmd_86+=" -e HOST_UID=${host_uid_72} -e HOST_GID=${host_gid_73} -e TERM=${term_74}"
-run_cmd_86+=" -e SANDBOX_PROJECT_DIR=${project_dir_77}"
+run_cmd_92="docker run -it --rm"
+run_cmd_92+=" --name ${cname_56}"
+run_cmd_92+=" --hostname code-sandbox"
+run_cmd_92+=" -w ${project_dir_83}"
+run_cmd_92+=" --network bridge"
+run_cmd_92+=" --tmpfs /tmp:exec,size=2g"
+run_cmd_92+=" --security-opt=no-new-privileges"
+run_cmd_92+=" --pids-limit=500"
+run_cmd_92+=" --log-driver=local --log-opt max-size=10m"
+run_cmd_92+=" -e HOST_UID=${host_uid_78} -e HOST_GID=${host_gid_79} -e TERM=${term_80}"
+run_cmd_92+=" -e SANDBOX_PROJECT_DIR=${project_dir_83}"
 if [ "$([ "_${languages_13}" == "_" ]; echo $?)" != 0 ]; then
-    run_cmd_86+=" -e SANDBOX_LANGUAGES=${languages_13}"
+    run_cmd_92+=" -e SANDBOX_LANGUAGES=${languages_13}"
 fi
 if [ "${skip_permissions_11}" != 0 ]; then
-    run_cmd_86+=" -e SANDBOX_SHADOW_CONFIGS=1"
-    run_cmd_86+=" -e SANDBOX_HOST_CONFIG_ROOT=/workspace/.sandbox-host-config"
+    run_cmd_92+=" -e SANDBOX_SHADOW_CONFIGS=1"
+    run_cmd_92+=" -e SANDBOX_HOST_CONFIG_ROOT=/workspace/.sandbox-host-config"
 fi
-volume_flags__147_v0 "${source_dir_85}" "${folder_76}" "${skip_permissions_11}"
-run_cmd_86+="${ret_volume_flags147_v0}"
+run_cmd_92+="${opencode_permission_env_77}"
+volume_flags__147_v0 "${source_dir_91}" "${folder_82}" "${skip_permissions_11}"
+run_cmd_92+="${ret_volume_flags147_v0}"
 env_flags__146_v0 
-run_cmd_86+="${ret_env_flags146_v0}"
-run_cmd_86+=" ${__IMAGE_NAME_3} ${cmd_71}"
-if [ "$([ "_${sandbox_dir_84}" == "_" ]; echo $?)" != 0 ]; then
-    agent_exit_106=0
-    ${run_cmd_86}
+run_cmd_92+="${ret_env_flags146_v0}"
+run_cmd_92+=" ${__IMAGE_NAME_3} ${cmd_76}"
+if [ "$([ "_${sandbox_dir_90}" == "_" ]; echo $?)" != 0 ]; then
+    agent_exit_112=0
+    ${run_cmd_92}
     __status=$?
     if [ "${__status}" != 0 ]; then
-    code_107="${__status}"
-        agent_exit_106="${code_107}"
+    code_113="${__status}"
+        agent_exit_112="${code_113}"
     fi
-    sandbox_exit__155_v0 "${sandbox_dir_84}" "${pwd_75}"
-    exit ${agent_exit_106}
+    sandbox_exit__157_v0 "${sandbox_dir_90}" "${pwd_81}"
+    exit ${agent_exit_112}
     __status=$?
 else
-    exec ${run_cmd_86}
+    exec ${run_cmd_92}
     __status=$?
     if [ "${__status}" != 0 ]; then
         exit "${__status}"

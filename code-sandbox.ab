@@ -14,7 +14,7 @@ fun show_help() {
     echo "  --pull                  Pull the latest pre-built Docker image"
     echo "  --update                Force an immediate update check before launch"
     echo "  --shell                 Open a bash shell (skip agent menu)"
-    echo "  --skip-permissions      Launch supported agents with their permission bypass flag"
+    echo "  --skip-permissions      Launch supported agents with their permission bypass mode"
     echo "  --languages <list>      Install mise languages (comma-separated)"
     echo "  --languages=<list>      Same as above"
     echo "  -h, --help              Show this help message"
@@ -460,6 +460,14 @@ fun resolve_cmd(shell_mode: Bool, explicit_cmd: Bool, pass_args: Text): Text {
     return show_menu()
 }
 
+fun command_name(cmd: Text): Text {
+    let normalized = trim(cmd)
+    if normalized == "" {
+        return ""
+    }
+    return trim(trust $ printf '%s' "{normalized}" | cut -d' ' -f1 $)
+}
+
 fun skip_permissions_flag(cmd: Text): Text {
     if {
         cmd == "claude" {
@@ -494,6 +502,19 @@ fun apply_skip_permissions(cmd: Text, skip_permissions: Bool): Text {
     }
 
     return "{cmd}{flag}"
+}
+
+fun opencode_permission_env_arg(skip_permissions: Bool, cmd: Text): Text {
+    if not skip_permissions {
+        return ""
+    }
+
+    if command_name(cmd) != "opencode" {
+        return ""
+    }
+
+    let permissions_json = trim(trust $ printf '\173"*":"allow","external_directory":\173"*":"deny","~/.**":"allow","~/.*/**":"allow"\175,"edit":\173"~/.**":"deny","~/.*/**":"deny"\175\175' $)
+    return " -e OPENCODE_PERMISSION='{permissions_json}'"
 }
 
 fun get_container_state(cname: Text): Text {
@@ -699,8 +720,10 @@ main(args) {
 
     if state == "running" {
         echo "Attaching to running container {cname} ..."
-        let cmd = apply_skip_permissions(resolve_cmd(shell_mode, explicit_cmd, pass_args), skip_permissions)
-        $ exec docker exec -it -e TERM=xterm-256color -e COLORTERM=truecolor -e FORCE_COLOR=1 "{cname}" gosu code {cmd} $?
+        let resolved_cmd = resolve_cmd(shell_mode, explicit_cmd, pass_args)
+        let cmd = apply_skip_permissions(resolved_cmd, skip_permissions)
+        let opencode_permission_env = opencode_permission_env_arg(skip_permissions, resolved_cmd)
+        $ exec docker exec -it -e TERM=xterm-256color -e COLORTERM=truecolor -e FORCE_COLOR=1{opencode_permission_env} "{cname}" gosu code {cmd} $?
     }
 
     if state != "none" {
@@ -712,7 +735,9 @@ main(args) {
         languages = select_languages()
     }
 
-    let cmd = apply_skip_permissions(resolve_cmd(shell_mode, explicit_cmd, pass_args), skip_permissions)
+    let resolved_cmd = resolve_cmd(shell_mode, explicit_cmd, pass_args)
+    let cmd = apply_skip_permissions(resolved_cmd, skip_permissions)
+    let opencode_permission_env = opencode_permission_env_arg(skip_permissions, resolved_cmd)
 
     // Build docker run command
     let host_uid = trust $ id -u $
@@ -751,6 +776,8 @@ main(args) {
         run_cmd += " -e SANDBOX_SHADOW_CONFIGS=1"
         run_cmd += " -e SANDBOX_HOST_CONFIG_ROOT=/workspace/.sandbox-host-config"
     }
+
+    run_cmd += opencode_permission_env
 
     run_cmd += volume_flags(source_dir, folder, skip_permissions)
     run_cmd += env_flags()
