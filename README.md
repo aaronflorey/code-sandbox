@@ -236,6 +236,21 @@ amber build code-sandbox.ab code-sandbox
 
 A pre-commit hook automatically compiles `code-sandbox.ab` and adds the compiled `code-sandbox` to your commit whenever the source changes.
 
+## Agent-Deck flavor image
+
+This repo also includes an Agent Deck-oriented sandbox image at `Dockerfile.agent-deck`.
+
+- Based on Agent Deck's sandbox Dockerfile shape (container stays alive with `sleep infinity`)
+- No `entrypoint.sh` user-mapping logic
+- No `code-sandbox` launcher/CLI assumptions baked into the image
+- Includes `mise`, Node.js 24, Bun, OpenCode, GitHub Copilot, and the extra tools from this repo (`rtk`, `lazygit`, `ast-grep`, etc.)
+
+Build it locally:
+
+```bash
+docker build -f Dockerfile.agent-deck -t code-sandbox-agent-deck:latest .
+```
+
 ## Troubleshooting
 
 **First pull is slow** — The image has Node, Bun, all the agents, and system packages. It's a one-time download.

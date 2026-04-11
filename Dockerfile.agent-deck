@@ -1,0 +1,74 @@
+# syntax=docker/dockerfile:1.7
+FROM ubuntu:24.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+ARG BUILD_DATE="unknown"
+ARG VCS_REF="unknown"
+ARG VERSION="agent-deck"
+
+LABEL org.opencontainers.image.title="code-sandbox agent-deck flavor" \
+      org.opencontainers.image.description="Agent Deck-style sandbox image with mise, OpenCode, Copilot, and developer tooling" \
+      org.opencontainers.image.source="https://github.com/aaronflorey/code-sandbox" \
+      org.opencontainers.image.url="https://github.com/aaronflorey/code-sandbox" \
+      org.opencontainers.image.licenses="MIT" \
+      org.opencontainers.image.created="${BUILD_DATE}" \
+      org.opencontainers.image.revision="${VCS_REF}" \
+      org.opencontainers.image.version="${VERSION}"
+
+# 1. System packages
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates curl wget jq unzip zip sudo \
+    git git-lfs openssh-client gnupg2 locales \
+    python3 \
+    ripgrep fd-find sqlite3 \
+    vim-tiny less bat zoxide fzf rsync \
+    procps \
+  && git lfs install \
+  && rm -rf /var/lib/apt/lists/*
+
+RUN sed -i 's/^# *en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen \
+    && locale-gen \
+    && update-locale LANG=en_US.UTF-8
+
+# 2. Node.js 24
+RUN curl -fsSL https://deb.nodesource.com/setup_24.x | bash - \
+  && apt-get update \
+  && apt-get install -y --no-install-recommends nodejs \
+  && rm -rf /var/lib/apt/lists/*
+
+# 3. Bun
+ENV BUN_INSTALL=/usr/local
+RUN curl -fsSL https://bun.sh/install | bash
+
+# 4. mise
+ENV MISE_INSTALL_PATH=/usr/local/bin/mise
+RUN curl https://mise.run | sh
+
+# 5. Agent CLIs needed for agent-deck flavor
+RUN bun install -g \
+    opencode-ai@latest \
+    @github/copilot \
+  && rm -rf /tmp/*
+
+# 6. Extra tools
+RUN curl -fsSL https://raw.githubusercontent.com/aaronflorey/bin/master/install.sh | sh \
+  && bin install https://github.com/rtk-ai/rtk \
+  && bin install https://github.com/jesseduffield/lazygit \
+  && bin install https://github.com/ast-grep/ast-grep
+
+# Pre-create credential and state directories for shared mounts
+RUN mkdir -p /root/.config/opencode \
+    /root/.local/share/opencode \
+    /root/.config/github-copilot \
+    /root/.ssh \
+    /workspace
+
+RUN chmod 755 /root
+
+ENV IS_SANDBOX=1
+ENV LANG=en_US.UTF-8
+ENV LC_ALL=en_US.UTF-8
+
+WORKDIR /workspace
+CMD ["sleep", "infinity"]

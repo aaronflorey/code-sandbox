@@ -7,6 +7,7 @@ on:
     paths:
       - ".github/workflows/test.yml"
       - "Dockerfile"
+      - "Dockerfile.agent-deck"
       - "entrypoint.sh"
       - "code-sandbox"
       - "code-sandbox.ab"
@@ -104,4 +105,28 @@ jobs:
             IO.puts("elixir-ok")
             EOF
             elixir /tmp/main.ex | grep -q "elixir-ok"
+          '
+
+  agent-deck-flavor-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build agent-deck flavor image
+        run: |
+          docker build -f Dockerfile.agent-deck -t code-sandbox-agent-deck:test .
+
+      - name: Verify core tools and CLIs
+        run: |
+          docker run --rm code-sandbox-agent-deck:test bash -lc '
+            set -euo pipefail
+
+            command -v mise >/dev/null
+            command -v bun >/dev/null
+            command -v opencode >/dev/null
+            command -v copilot >/dev/null
+            command -v ast-grep >/dev/null
+            command -v lazygit >/dev/null
+            command -v rtk >/dev/null
           '
