@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1.7
-FROM ubuntu:24.04
+FROM ubuntu:24.04@sha256:84e77dee7d1bc93fb029a45e3c6cb9d8aa4831ccfcc7103d36e876938d28895b
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PATH="/root/.local/bin:/root/.opencode/bin:${PATH}"
@@ -80,4 +80,5 @@ ENV LANG=en_US.UTF-8
 ENV LC_ALL=en_US.UTF-8
 
 WORKDIR /workspace
+USER root
 CMD ["sleep", "infinity"]
