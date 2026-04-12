@@ -2,6 +2,7 @@
 FROM ubuntu:24.04
 
 ENV DEBIAN_FRONTEND=noninteractive
+ENV PATH="/root/.local/bin:/root/.opencode/bin:${PATH}"
 
 ARG BUILD_DATE="unknown"
 ARG VCS_REF="unknown"
@@ -37,6 +38,8 @@ RUN curl -fsSL https://deb.nodesource.com/setup_24.x | bash - \
   && apt-get install -y --no-install-recommends nodejs \
   && rm -rf /var/lib/apt/lists/*
 
+WORKDIR /root
+
 # 3. Bun
 ENV BUN_INSTALL=/usr/local
 RUN curl -fsSL https://bun.sh/install | bash
@@ -58,11 +61,17 @@ RUN curl -fsSL https://raw.githubusercontent.com/aaronflorey/bin/master/install.
   && bin install https://github.com/ast-grep/ast-grep
 
 # Pre-create credential and state directories for shared mounts
-RUN mkdir -p /root/.config/opencode \
+RUN mkdir -p /root/.claude \
+    /root/.config/opencode \
     /root/.local/share/opencode \
+    /root/.local/share/opencode/state \
+    /root/.local/state \
     /root/.config/github-copilot \
+    /root/.codex \
+    /root/.gemini \
     /root/.ssh \
-    /workspace
+    /workspace \
+  && ln -sfn /root/.local/share/opencode/state /root/.local/state/opencode
 
 RUN chmod 755 /root
 
