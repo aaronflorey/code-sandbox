@@ -46,6 +46,8 @@ jobs:
             command -v claude >/dev/null
             command -v gemini >/dev/null
             command -v opencode >/dev/null
+            command -v gsd >/dev/null
+            command -v gsd-pi >/dev/null
             
             mise which php >/dev/null
             mise which go >/dev/null
@@ -126,6 +128,8 @@ jobs:
             command -v bun >/dev/null
             command -v opencode >/dev/null
             command -v copilot >/dev/null
+            command -v gsd >/dev/null
+            command -v gsd-pi >/dev/null
             command -v ast-grep >/dev/null
             command -v lazygit >/dev/null
             command -v rtk >/dev/null

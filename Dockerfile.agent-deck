@@ -6,7 +6,7 @@ ENV PATH="/root/.local/bin:/root/.opencode/bin:${PATH}"
 
 ARG BUILD_DATE="unknown"
 ARG VCS_REF="unknown"
-ARG VERSION="agent-deck"
+ARG IMAGE_VERSION="agent-deck"
 
 LABEL org.opencontainers.image.title="code-sandbox agent-deck flavor" \
       org.opencontainers.image.description="Agent Deck-style sandbox image with mise, OpenCode, Copilot, and developer tooling" \
@@ -15,7 +15,7 @@ LABEL org.opencontainers.image.title="code-sandbox agent-deck flavor" \
       org.opencontainers.image.licenses="MIT" \
       org.opencontainers.image.created="${BUILD_DATE}" \
       org.opencontainers.image.revision="${VCS_REF}" \
-      org.opencontainers.image.version="${VERSION}"
+      org.opencontainers.image.version="${IMAGE_VERSION}"
 
 # 1. System packages
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -49,9 +49,8 @@ ENV MISE_INSTALL_PATH=/usr/local/bin/mise
 RUN curl https://mise.run | sh
 
 # 5. Agent CLIs needed for agent-deck flavor
-RUN bun install -g \
-    opencode-ai@latest \
-    @github/copilot \
+RUN curl -fsSL https://opencode.ai/install | bash \
+  && npm install -g @github/copilot \
   && rm -rf /tmp/*
 
 # 6. Extra tools
@@ -62,16 +61,17 @@ RUN curl -fsSL https://raw.githubusercontent.com/aaronflorey/bin/master/install.
 
 # Pre-create credential and state directories for shared mounts
 RUN mkdir -p /root/.claude \
-    /root/.config/opencode \
+    /root/.config \
     /root/.local/share/opencode \
     /root/.local/share/opencode/state \
     /root/.local/state \
-    /root/.config/github-copilot \
+    /root/.local/state/opencode \
+    /root/.config/opencode \
     /root/.codex \
     /root/.gemini \
     /root/.ssh \
-    /workspace \
-  && ln -sfn /root/.local/share/opencode/state /root/.local/state/opencode
+    /workspace/.copilot \
+  && ln -sfn /workspace/.copilot /root/.copilot
 
 RUN chmod 755 /root
 
@@ -80,5 +80,5 @@ ENV LANG=en_US.UTF-8
 ENV LC_ALL=en_US.UTF-8
 
 WORKDIR /workspace
-USER root
+USER 1000:1000
 CMD ["sleep", "infinity"]

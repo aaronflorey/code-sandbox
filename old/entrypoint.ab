@@ -46,9 +46,10 @@ fun setup_git(home_dir: Text, project_dir: Text, user: Text): Null {
 }
 
 fun setup_local_dirs(home_dir: Text, user: Text): Null {
-    trust $ mkdir -p "{home_dir}/.local/share/mise" "{home_dir}/.local/state/mise" "{home_dir}/.local/bin" "{home_dir}/.config/mise" "{home_dir}/.config/composer" "{home_dir}/.cache/mise" $
+    trust $ mkdir -p "{home_dir}/.local/share/mise" "{home_dir}/.local/state/mise" "{home_dir}/.local/bin" "{home_dir}/.config/mise" "{home_dir}/.config/composer" "{home_dir}/.cache/mise" "{home_dir}/.bun" $
     silent trust $ chown -R "{user}:{user}" "{home_dir}/.local" "{home_dir}/.config" $
     silent trust $ chown -R "{user}:{user}" "{home_dir}/.cache" $
+    silent trust $ chown -R "{user}:{user}" "{home_dir}/.bun" $
     if dir_exists("/usr/local/install/global/node_modules/@just-every/code") {
         silent trust $ chown -R "{user}:{user}" "/usr/local/install/global/node_modules/@just-every/code" $
     }
@@ -58,7 +59,7 @@ fun setup_shadow_configs(home_dir: Text, user: Text): Null {
     let shadow_configs = env_var_get("SANDBOX_SHADOW_CONFIGS") failed { "" }
     if shadow_configs == "1" {
         let host_config_root = env_var_get("SANDBOX_HOST_CONFIG_ROOT") failed { "{home_dir}/.sandbox-host-config" }
-        let config_dirs = [".codex", ".claude", ".gemini", ".opencode", ".code", ".copilot", ".agents"]
+        let config_dirs = [".codex", ".claude", ".gemini", ".opencode", ".code", ".copilot", ".agents", ".gsd"]
         for dir in config_dirs {
             if dir_exists("{host_config_root}/{dir}") {
                 trust $ mkdir -p "{home_dir}/{dir}" $
@@ -121,6 +122,20 @@ fun setup_code_symlink(home_dir: Text, user: Text): Null {
             let coder_path = trust $ command -v coder $
             trust $ ln -sf "{coder_path}" "{home_dir}/.local/bin/code" $
             silent trust $ chown "{user}:{user}" "{home_dir}/.local/bin/code" $
+        }
+    }
+}
+
+fun ensure_gsd_extension_deps(home_dir: Text, user: Text): Null {
+    let gsd_agent_dir = "{home_dir}/.gsd/agent"
+    if dir_exists(gsd_agent_dir) {
+        let has_mcp_sdk = file_exists("{gsd_agent_dir}/node_modules/@modelcontextprotocol/sdk/package.json")
+        let has_yaml = file_exists("{gsd_agent_dir}/node_modules/yaml/package.json")
+        let has_picomatch = file_exists("{gsd_agent_dir}/node_modules/picomatch/package.json")
+
+        if not has_mcp_sdk or not has_yaml or not has_picomatch {
+            echo "Installing missing GSD extension dependencies ..."
+            trust $ gosu "{user}" env HOME="{home_dir}" npm install --prefix "{gsd_agent_dir}" @modelcontextprotocol/sdk yaml picomatch $
         }
     }
 }
@@ -214,11 +229,13 @@ main(args) {
     setup_shadow_configs(home_dir, user)
     setup_bashrc(home_dir, user)
 
+    trust $ export BUN_INSTALL="{home_dir}/.bun" $
     let current_path = env_var_get("PATH") failed { "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" }
-    trust $ export PATH="{home_dir}/.local/share/mise/shims:{home_dir}/.local/bin:/usr/local/bun/bin:{current_path}" $
+    trust $ export PATH="{home_dir}/.local/share/mise/shims:{home_dir}/.local/bin:{home_dir}/.bun/bin:/usr/local/bin:/usr/local/bun/bin:{current_path}" $
     setup_mise_env(home_dir, project_dir)
 
     setup_code_symlink(home_dir, user)
+    ensure_gsd_extension_deps(home_dir, user)
 
     let sandbox_languages = env_var_get("SANDBOX_LANGUAGES") failed { "" }
     if sandbox_languages != "" {

@@ -342,7 +342,7 @@ fun volume_flags(source_dir: Text, folder: Text, skip_permissions: Bool): Text {
 
     flags += " -v {source_dir}:/workspace/{folder}"
 
-    let config_dirs = [".codex", ".claude", ".gemini", ".opencode", ".code", ".copilot", ".agents"]
+    let config_dirs = [".codex", ".claude", ".gemini", ".opencode", ".code", ".copilot", ".agents", ".gsd"]
     for dir in config_dirs {
         if dir_exists("{home}/{dir}") {
             if skip_permissions {
@@ -404,7 +404,7 @@ fun volume_flags(source_dir: Text, folder: Text, skip_permissions: Bool): Text {
         flags += " -v {home}/.gitconfig:/workspace/.gitconfig:ro"
     }
 
-    flags += " -v code-sandbox-bun-cache:/home/code/.bun"
+    flags += " -v code-sandbox-bun-cache:/workspace/.bun"
     flags += " -v code-sandbox-mise-data:/workspace/.local/share/mise"
     flags += " -v code-sandbox-mise-state:/workspace/.local/state/mise"
     flags += " -v code-sandbox-mise-cache:/workspace/.cache/mise"
@@ -421,10 +421,11 @@ fun show_menu(): Text {
     echo "  4) gemini    - Gemini CLI"
     echo "  5) opencode  - OpenCode"
     echo "  6) copilot   - GitHub Copilot"
-    echo "  7) shell     - Bash shell"
+    echo "  7) gsd-pi    - GSD PI"
+    echo "  8) shell     - Bash shell"
     echo ""
 
-    let choice = input_prompt("Choice [1-7]: ")
+    let choice = input_prompt("Choice [1-8]: ")
 
     if choice == "1": return "code"
     if choice == "2": return "claude"
@@ -432,7 +433,8 @@ fun show_menu(): Text {
     if choice == "4": return "gemini"
     if choice == "5": return "opencode"
     if choice == "6": return "copilot"
-    if choice == "7": return "bash"
+    if choice == "7": return "gsd"
+    if choice == "8": return "bash"
 
     echo "Invalid choice."
     exit 1

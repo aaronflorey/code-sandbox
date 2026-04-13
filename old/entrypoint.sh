@@ -6,10 +6,10 @@
 split__5_v0() {
     local text=$1
     local delimiter=$2
-    result_22=()
-    IFS="${delimiter}" read -rd '' -a result_22 < <(printf %s "$text")
+    result_26=()
+    IFS="${delimiter}" read -rd '' -a result_26 < <(printf %s "$text")
     __status=$?
-    ret_split5_v0=("${result_22[@]}")
+    ret_split5_v0=("${result_26[@]}")
     return 0
 }
 
@@ -157,15 +157,17 @@ setup_git__129_v0() {
 setup_local_dirs__130_v0() {
     local home_dir=$1
     local user=$2
-    mkdir -p "${home_dir}/.local/share/mise" "${home_dir}/.local/state/mise" "${home_dir}/.local/bin" "${home_dir}/.config/mise" "${home_dir}/.config/composer" "${home_dir}/.cache/mise"
+    mkdir -p "${home_dir}/.local/share/mise" "${home_dir}/.local/state/mise" "${home_dir}/.local/bin" "${home_dir}/.config/mise" "${home_dir}/.config/composer" "${home_dir}/.cache/mise" "${home_dir}/.bun"
     __status=$?
     chown -R "${user}:${user}" "${home_dir}/.local" "${home_dir}/.config" >/dev/null 2>&1
     __status=$?
     chown -R "${user}:${user}" "${home_dir}/.cache" >/dev/null 2>&1
     __status=$?
+    chown -R "${user}:${user}" "${home_dir}/.bun" >/dev/null 2>&1
+    __status=$?
     dir_exists__39_v0 "/usr/local/install/global/node_modules/@just-every/code"
-    ret_dir_exists39_v0__52_8="${ret_dir_exists39_v0}"
-    if [ "${ret_dir_exists39_v0__52_8}" != 0 ]; then
+    ret_dir_exists39_v0__53_8="${ret_dir_exists39_v0}"
+    if [ "${ret_dir_exists39_v0__53_8}" != 0 ]; then
         chown -R "${user}:${user}" "/usr/local/install/global/node_modules/@just-every/code" >/dev/null 2>&1
         __status=$?
     fi
@@ -187,11 +189,11 @@ setup_shadow_configs__131_v0() {
             :
         fi
         host_config_root_11="${ret_env_var_get101_v0}"
-        config_dirs_12=(".codex" ".claude" ".gemini" ".opencode" ".code" ".copilot" ".agents")
+        config_dirs_12=(".codex" ".claude" ".gemini" ".opencode" ".code" ".copilot" ".agents" ".gsd")
         for dir_13 in "${config_dirs_12[@]}"; do
             dir_exists__39_v0 "${host_config_root_11}/${dir_13}"
-            ret_dir_exists39_v0__63_16="${ret_dir_exists39_v0}"
-            if [ "${ret_dir_exists39_v0__63_16}" != 0 ]; then
+            ret_dir_exists39_v0__64_16="${ret_dir_exists39_v0}"
+            if [ "${ret_dir_exists39_v0__64_16}" != 0 ]; then
                 mkdir -p "${home_dir}/${dir_13}"
                 __status=$?
                 cp -a "${host_config_root_11}/${dir_13}/." "${home_dir}/${dir_13}/"
@@ -203,8 +205,8 @@ setup_shadow_configs__131_v0() {
         config_files_14=(".claude.json")
         for file_15 in "${config_files_14[@]}"; do
             file_exists__40_v0 "${host_config_root_11}/${file_15}"
-            ret_file_exists40_v0__72_16="${ret_file_exists40_v0}"
-            if [ "${ret_file_exists40_v0__72_16}" != 0 ]; then
+            ret_file_exists40_v0__73_16="${ret_file_exists40_v0}"
+            if [ "${ret_file_exists40_v0__73_16}" != 0 ]; then
                 cp -a "${host_config_root_11}/${file_15}" "${home_dir}/${file_15}"
                 __status=$?
                 chown "${user}:${user}" "${home_dir}/${file_15}" >/dev/null 2>&1
@@ -212,8 +214,8 @@ setup_shadow_configs__131_v0() {
             fi
         done
         dir_exists__39_v0 "${host_config_root_11}/.config/opencode"
-        ret_dir_exists39_v0__78_12="${ret_dir_exists39_v0}"
-        if [ "${ret_dir_exists39_v0__78_12}" != 0 ]; then
+        ret_dir_exists39_v0__79_12="${ret_dir_exists39_v0}"
+        if [ "${ret_dir_exists39_v0__79_12}" != 0 ]; then
             mkdir -p "${home_dir}/.config/opencode"
             __status=$?
             cp -a "${host_config_root_11}/.config/opencode/." "${home_dir}/.config/opencode/"
@@ -222,8 +224,8 @@ setup_shadow_configs__131_v0() {
             __status=$?
         fi
         dir_exists__39_v0 "${host_config_root_11}/.cache/opencode"
-        ret_dir_exists39_v0__84_12="${ret_dir_exists39_v0}"
-        if [ "${ret_dir_exists39_v0__84_12}" != 0 ]; then
+        ret_dir_exists39_v0__85_12="${ret_dir_exists39_v0}"
+        if [ "${ret_dir_exists39_v0__85_12}" != 0 ]; then
             mkdir -p "${home_dir}/.cache/opencode"
             __status=$?
             cp -a "${host_config_root_11}/.cache/opencode/." "${home_dir}/.cache/opencode/"
@@ -232,8 +234,8 @@ setup_shadow_configs__131_v0() {
             __status=$?
         fi
         dir_exists__39_v0 "${host_config_root_11}/.local/share/opencode"
-        ret_dir_exists39_v0__90_12="${ret_dir_exists39_v0}"
-        if [ "${ret_dir_exists39_v0__90_12}" != 0 ]; then
+        ret_dir_exists39_v0__91_12="${ret_dir_exists39_v0}"
+        if [ "${ret_dir_exists39_v0__91_12}" != 0 ]; then
             mkdir -p "${home_dir}/.local/share/opencode"
             __status=$?
             cp -a "${host_config_root_11}/.local/share/opencode/." "${home_dir}/.local/share/opencode/"
@@ -242,8 +244,8 @@ setup_shadow_configs__131_v0() {
             __status=$?
         fi
         dir_exists__39_v0 "${host_config_root_11}/.local/state/opencode"
-        ret_dir_exists39_v0__96_12="${ret_dir_exists39_v0}"
-        if [ "${ret_dir_exists39_v0__96_12}" != 0 ]; then
+        ret_dir_exists39_v0__97_12="${ret_dir_exists39_v0}"
+        if [ "${ret_dir_exists39_v0__97_12}" != 0 ]; then
             mkdir -p "${home_dir}/.local/state/opencode"
             __status=$?
             cp -a "${host_config_root_11}/.local/state/opencode/." "${home_dir}/.local/state/opencode/"
@@ -279,11 +281,11 @@ setup_code_symlink__133_v0() {
     local home_dir=$1
     local user=$2
     is_command__103_v0 "code"
-    ret_is_command103_v0__119_12="${ret_is_command103_v0}"
-    if [ "$(( ! ${ret_is_command103_v0__119_12} ))" != 0 ]; then
+    ret_is_command103_v0__120_12="${ret_is_command103_v0}"
+    if [ "$(( ! ${ret_is_command103_v0__120_12} ))" != 0 ]; then
         is_command__103_v0 "coder"
-        ret_is_command103_v0__120_12="${ret_is_command103_v0}"
-        if [ "${ret_is_command103_v0__120_12}" != 0 ]; then
+        ret_is_command103_v0__121_12="${ret_is_command103_v0}"
+        if [ "${ret_is_command103_v0__121_12}" != 0 ]; then
             command_7="$(command -v coder)"
             __status=$?
             coder_path_20="${command_7}"
@@ -295,7 +297,28 @@ setup_code_symlink__133_v0() {
     fi
 }
 
-setup_mise_env__134_v0() {
+ensure_gsd_extension_deps__134_v0() {
+    local home_dir=$1
+    local user=$2
+    gsd_agent_dir_21="${home_dir}/.gsd/agent"
+    dir_exists__39_v0 "${gsd_agent_dir_21}"
+    ret_dir_exists39_v0__131_8="${ret_dir_exists39_v0}"
+    if [ "${ret_dir_exists39_v0__131_8}" != 0 ]; then
+        file_exists__40_v0 "${gsd_agent_dir_21}/node_modules/@modelcontextprotocol/sdk/package.json"
+        has_mcp_sdk_22="${ret_file_exists40_v0}"
+        file_exists__40_v0 "${gsd_agent_dir_21}/node_modules/yaml/package.json"
+        has_yaml_23="${ret_file_exists40_v0}"
+        file_exists__40_v0 "${gsd_agent_dir_21}/node_modules/picomatch/package.json"
+        has_picomatch_24="${ret_file_exists40_v0}"
+        if [ "$(( $(( $(( ! ${has_mcp_sdk_22} )) || $(( ! ${has_yaml_23} )) )) || $(( ! ${has_picomatch_24} )) ))" != 0 ]; then
+            echo "Installing missing GSD extension dependencies ..."
+            gosu "${user}" env HOME="${home_dir}" npm install --prefix "${gsd_agent_dir_21}" @modelcontextprotocol/sdk yaml picomatch
+            __status=$?
+        fi
+    fi
+}
+
+setup_mise_env__135_v0() {
     local home_dir=$1
     local project_dir=$2
     trusted_paths_19="${home_dir}:${home_dir}/.config/mise:${home_dir}/.config/mise/config.toml:${project_dir}:${project_dir}/.mise.toml:${project_dir}/mise.toml"
@@ -317,7 +340,7 @@ setup_mise_env__134_v0() {
     __status=$?
 }
 
-install_php__135_v0() {
+install_php__136_v0() {
     local home_dir=$1
     local user=$2
     gosu "${user}" env HOME="${home_dir}" mise use -g github:aaronflorey/php@8.4 >/dev/null 2>&1
@@ -332,7 +355,7 @@ install_php__135_v0() {
     fi
 }
 
-install_languages__136_v0() {
+install_languages__137_v0() {
     local sandbox_languages=$1
     local project_dir=$2
     local home_dir=$3
@@ -347,32 +370,32 @@ install_languages__136_v0() {
         __status=$?
     else
         split__5_v0 "${sandbox_languages}" ","
-        langs_23=("${ret_split5_v0[@]}")
-        for lang_24 in "${langs_23[@]}"; do
-            trim__11_v0 "${lang_24}"
-            l_25="${ret_trim11_v0}"
-            if [ "$([ "_${l_25}" != "_" ]; echo $?)" != 0 ]; then
+        langs_27=("${ret_split5_v0[@]}")
+        for lang_28 in "${langs_27[@]}"; do
+            trim__11_v0 "${lang_28}"
+            l_29="${ret_trim11_v0}"
+            if [ "$([ "_${l_29}" != "_" ]; echo $?)" != 0 ]; then
                 continue
             fi
-            if [ "$([ "_${l_25}" != "_all" ]; echo $?)" != 0 ]; then
+            if [ "$([ "_${l_29}" != "_all" ]; echo $?)" != 0 ]; then
                 echo "Installing all languages via mise (php, go, rust, ruby, java, python, zig, erlang, elixir) ..."
-                install_php__135_v0 "${home_dir}" "${user}"
+                install_php__136_v0 "${home_dir}" "${user}"
                 gosu "${user}" env HOME="${home_dir}" mise use -g go@latest rust@latest ruby@latest java@latest python@latest zig@latest erlang@latest elixir@latest
                 __status=$?
                 gosu "${user}" env HOME="${home_dir}" mise reshim
                 __status=$?
                 break
             fi
-            if [ "$(( $(( $(( $(( $(( $(( $(( $(( $([ "_${l_25}" != "_php" ]; echo $?) || $([ "_${l_25}" != "_go" ]; echo $?) )) || $([ "_${l_25}" != "_rust" ]; echo $?) )) || $([ "_${l_25}" != "_ruby" ]; echo $?) )) || $([ "_${l_25}" != "_java" ]; echo $?) )) || $([ "_${l_25}" != "_python" ]; echo $?) )) || $([ "_${l_25}" != "_zig" ]; echo $?) )) || $([ "_${l_25}" != "_erlang" ]; echo $?) )) || $([ "_${l_25}" != "_elixir" ]; echo $?) ))" != 0 ]; then
-                echo "Installing ${l_25} via mise ..."
-                if [ "$([ "_${l_25}" != "_php" ]; echo $?)" != 0 ]; then
-                    install_php__135_v0 "${home_dir}" "${user}"
+            if [ "$(( $(( $(( $(( $(( $(( $(( $(( $([ "_${l_29}" != "_php" ]; echo $?) || $([ "_${l_29}" != "_go" ]; echo $?) )) || $([ "_${l_29}" != "_rust" ]; echo $?) )) || $([ "_${l_29}" != "_ruby" ]; echo $?) )) || $([ "_${l_29}" != "_java" ]; echo $?) )) || $([ "_${l_29}" != "_python" ]; echo $?) )) || $([ "_${l_29}" != "_zig" ]; echo $?) )) || $([ "_${l_29}" != "_erlang" ]; echo $?) )) || $([ "_${l_29}" != "_elixir" ]; echo $?) ))" != 0 ]; then
+                echo "Installing ${l_29} via mise ..."
+                if [ "$([ "_${l_29}" != "_php" ]; echo $?)" != 0 ]; then
+                    install_php__136_v0 "${home_dir}" "${user}"
                 else
-                    gosu "${user}" env HOME="${home_dir}" mise use -g "${l_25}@latest"
+                    gosu "${user}" env HOME="${home_dir}" mise use -g "${l_29}@latest"
                     __status=$?
                 fi
             else
-                echo "Unknown language: ${l_25} (skipping)"
+                echo "Unknown language: ${l_29} (skipping)"
             fi
         done
         gosu "${user}" env HOME="${home_dir}" mise reshim
@@ -380,18 +403,18 @@ install_languages__136_v0() {
     fi
 }
 
-install_composer__137_v0() {
+install_composer__138_v0() {
     local home_dir=$1
     local user=$2
-    php_available_26=1
+    php_available_30=1
     gosu "${user}" env HOME="${home_dir}" mise which php >/dev/null 2>&1
     __status=$?
     if [ "${__status}" != 0 ]; then
-        php_available_26=0
+        php_available_30=0
     fi
     is_command__103_v0 "composer"
-    ret_is_command103_v0__190_30="${ret_is_command103_v0}"
-    if [ "$(( ${php_available_26} && $(( ! ${ret_is_command103_v0__190_30} )) ))" != 0 ]; then
+    ret_is_command103_v0__205_30="${ret_is_command103_v0}"
+    if [ "$(( ${php_available_30} && $(( ! ${ret_is_command103_v0__205_30} )) ))" != 0 ]; then
         echo "Installing Composer ..."
         gosu "${user}" env HOME="${home_dir}" curl -fsSL "https://getcomposer.org/download/latest-stable/composer.phar" -o "${home_dir}/.local/bin/composer"
         __status=$?
@@ -435,33 +458,36 @@ setup_git__129_v0 "${home_dir_6}" "${project_dir_7}" "${user_9}"
 setup_local_dirs__130_v0 "${home_dir_6}" "${user_9}"
 setup_shadow_configs__131_v0 "${home_dir_6}" "${user_9}"
 setup_bashrc__132_v0 "${home_dir_6}" "${user_9}"
+export BUN_INSTALL="${home_dir_6}/.bun"
+__status=$?
 env_var_get__101_v0 "PATH"
 __status=$?
 if [ "${__status}" != 0 ]; then
     :
 fi
 current_path_18="${ret_env_var_get101_v0}"
-export PATH="${home_dir_6}/.local/share/mise/shims:${home_dir_6}/.local/bin:/usr/local/bun/bin:${current_path_18}"
+export PATH="${home_dir_6}/.local/share/mise/shims:${home_dir_6}/.local/bin:${home_dir_6}/.bun/bin:/usr/local/bin:/usr/local/bun/bin:${current_path_18}"
 __status=$?
-setup_mise_env__134_v0 "${home_dir_6}" "${project_dir_7}"
+setup_mise_env__135_v0 "${home_dir_6}" "${project_dir_7}"
 setup_code_symlink__133_v0 "${home_dir_6}" "${user_9}"
+ensure_gsd_extension_deps__134_v0 "${home_dir_6}" "${user_9}"
 env_var_get__101_v0 "SANDBOX_LANGUAGES"
 __status=$?
 if [ "${__status}" != 0 ]; then
     :
 fi
-sandbox_languages_21="${ret_env_var_get101_v0}"
-if [ "$([ "_${sandbox_languages_21}" == "_" ]; echo $?)" != 0 ]; then
-    install_languages__136_v0 "${sandbox_languages_21}" "${project_dir_7}" "${home_dir_6}" "${user_9}"
+sandbox_languages_25="${ret_env_var_get101_v0}"
+if [ "$([ "_${sandbox_languages_25}" == "_" ]; echo $?)" != 0 ]; then
+    install_languages__137_v0 "${sandbox_languages_25}" "${project_dir_7}" "${home_dir_6}" "${user_9}"
 fi
-install_composer__137_v0 "${home_dir_6}" "${user_9}"
+install_composer__138_v0 "${home_dir_6}" "${user_9}"
 export COLORTERM=truecolor
 __status=$?
 export FORCE_COLOR=1
 __status=$?
 dir_exists__39_v0 "${project_dir_7}"
-ret_dir_exists39_v0__233_8="${ret_dir_exists39_v0}"
-if [ "${ret_dir_exists39_v0__233_8}" != 0 ]; then
+ret_dir_exists39_v0__250_8="${ret_dir_exists39_v0}"
+if [ "${ret_dir_exists39_v0__250_8}" != 0 ]; then
     cd "${project_dir_7}"
     __status=$?
 fi

@@ -50,7 +50,9 @@ RUN bun install -g \
       @google/gemini-cli \
       opencode-ai@latest \
       @just-every/code \
+      gsd-pi@latest \
       @github/copilot \
+      && ln -sf "$(command -v gsd)" /usr/local/bin/gsd-pi \
       && rm -rf /tmp/*
 
 # 6. Install Bin

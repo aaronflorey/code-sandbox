@@ -658,7 +658,7 @@ volume_flags__147_v0() {
     home_94="${command_39}"
     shadow_root_95="/workspace/.sandbox-host-config"
     flags_93+=" -v ${source_dir}:/workspace/${folder}"
-    config_dirs_96=(".codex" ".claude" ".gemini" ".opencode" ".code" ".copilot" ".agents")
+    config_dirs_96=(".codex" ".claude" ".gemini" ".opencode" ".code" ".copilot" ".agents" ".gsd")
     for dir_97 in "${config_dirs_96[@]}"; do
         dir_exists__36_v0 "${home_94}/${dir_97}"
         ret_dir_exists36_v0__347_12="${ret_dir_exists36_v0}"
@@ -728,7 +728,7 @@ volume_flags__147_v0() {
     if [ "${ret_file_exists37_v0__403_8}" != 0 ]; then
         flags_93+=" -v ${home_94}/.gitconfig:/workspace/.gitconfig:ro"
     fi
-    flags_93+=" -v code-sandbox-bun-cache:/home/code/.bun"
+    flags_93+=" -v code-sandbox-bun-cache:/workspace/.bun"
     flags_93+=" -v code-sandbox-mise-data:/workspace/.local/share/mise"
     flags_93+=" -v code-sandbox-mise-state:/workspace/.local/state/mise"
     flags_93+=" -v code-sandbox-mise-cache:/workspace/.cache/mise"
@@ -745,9 +745,10 @@ show_menu__148_v0() {
     echo "  4) gemini    - Gemini CLI"
     echo "  5) opencode  - OpenCode"
     echo "  6) copilot   - GitHub Copilot"
-    echo "  7) shell     - Bash shell"
+    echo "  7) gsd-pi    - GSD PI"
+    echo "  8) shell     - Bash shell"
     echo ""
-    input_prompt__103_v0 "Choice [1-7]: "
+    input_prompt__103_v0 "Choice [1-8]: "
     choice_60="${ret_input_prompt103_v0}"
     if [ "$([ "_${choice_60}" != "_1" ]; echo $?)" != 0 ]; then
         ret_show_menu148_v0="code"
@@ -774,6 +775,10 @@ show_menu__148_v0() {
         return 0
     fi
     if [ "$([ "_${choice_60}" != "_7" ]; echo $?)" != 0 ]; then
+        ret_show_menu148_v0="gsd"
+        return 0
+    fi
+    if [ "$([ "_${choice_60}" != "_8" ]; echo $?)" != 0 ]; then
         ret_show_menu148_v0="bash"
         return 0
     fi
@@ -882,8 +887,8 @@ opencode_permission_env_arg__154_v0() {
         return 0
     fi
     command_name__151_v0 "${cmd}"
-    ret_command_name151_v0__512_8="${ret_command_name151_v0}"
-    if [ "$([ "_${ret_command_name151_v0__512_8}" == "_opencode" ]; echo $?)" != 0 ]; then
+    ret_command_name151_v0__514_8="${ret_command_name151_v0}"
+    if [ "$([ "_${ret_command_name151_v0__514_8}" == "_opencode" ]; echo $?)" != 0 ]; then
         ret_opencode_permission_env_arg154_v0=""
         return 0
     fi
@@ -1063,9 +1068,9 @@ do
     fi
     arg_17="${args_6[${i_16}]}"
     starts_with__23_v0 "${arg_17}" "--languages="
-    ret_starts_with23_v0__677_13="${ret_starts_with23_v0}"
+    ret_starts_with23_v0__679_13="${ret_starts_with23_v0}"
     starts_with__23_v0 "${arg_17}" "-"
-    ret_starts_with23_v0__685_13="${ret_starts_with23_v0}"
+    ret_starts_with23_v0__687_13="${ret_starts_with23_v0}"
     if [ "$([ "_${arg_17}" != "_--pull" ]; echo $?)" != 0 ]; then
         do_pull_7=1
     elif [ "$([ "_${arg_17}" != "_--build" ]; echo $?)" != 0 ]; then
@@ -1087,7 +1092,7 @@ do
         fi
         i_16="$(( ${i_16} + 1 ))"
         languages_13="${args_6[${i_16}]}"
-    elif [ "${ret_starts_with23_v0__677_13}" != 0 ]; then
+    elif [ "${ret_starts_with23_v0__679_13}" != 0 ]; then
         command_54="$(echo "${arg_17}" | cut -d= -f2-)"
         __status=$?
         languages_13="${command_54}"
@@ -1096,7 +1101,7 @@ do
         pass_args_14="${ret_collect_args149_v0}"
         explicit_cmd_15=1
         break
-    elif [ "${ret_starts_with23_v0__685_13}" != 0 ]; then
+    elif [ "${ret_starts_with23_v0__687_13}" != 0 ]; then
         echo "Error: Unknown option: ${arg_17}"
         echo "Use --help for usage."
         exit 1
